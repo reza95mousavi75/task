@@ -32,17 +32,17 @@
   - `status` یکی از `reserved|confirmed|cancelled|noshow`
   - `date_from` / `date_to` (DATETIME)
   - `page`, `per_page` (حداکثر 50)
-- **Permission**: `edit_posts`.
+- **Permission**: `ms_manage_appointments`.
 - **Response**: `{ data: [ {id, status, patient_name, phone, provider_id, service_id, slot_time, otp_reference} ], total, page }` مرتب‌شده بر اساس `slot_time` صعودی.
 
 ### GET /ms/v1/appointments/{id}
 - **هدف**: دریافت جزئیات یک نوبت برای داشبورد.
-- **Permission**: `edit_posts`.
+- **Permission**: `ms_manage_appointments`.
 - **Response**: payload مشابه آبجکت داخل لیست.
 
 ### PATCH /ms/v1/appointments/{id}/status
 - **Body**: `{ "status": "reserved|confirmed|cancelled|noshow" }`
-- **Rule (پیاده‌سازی اولیه)**: نیاز به capability `edit_posts`؛ status به post_status متناظر (`ms_reserved|ms_confirmed|ms_cancelled|ms_noshow`) نگاشت می‌شود.
+- **Rule (پیاده‌سازی اولیه)**: نیاز به capability `ms_manage_appointments`؛ status به post_status متناظر (`ms_reserved|ms_confirmed|ms_cancelled|ms_noshow`) نگاشت می‌شود.
 
 ### GET /ms/v1/providers/{id}/availability
 - **Query**: `from`, `to` (ISO datetime)
@@ -51,16 +51,16 @@
 ## Patient & EMR (Mini)
 ### POST /ms/v1/patients
 - **Body (پیاده‌سازی فعلی)**: `{ "full_name":"...", "phone":"...", "national_code":"...", "meta": {"blood_type":"A+"} }`
-- **Permission**: عمومی (برای سناریوی OTP/رزرو سریع) ولی باید همراه rate-limit سراسری باشد.
+- **Permission**: `ms_manage_emr`.
 - **Response**: `id`, `full_name`, `phone`, `national_code`, `meta`.
 
 ### GET /ms/v1/patients
 - **Query**: `search` (نام/تلفن)، `phone`, `national_code`, `per_page`, `page`.
-- **Permission**: `edit_posts`.
+- **Permission**: `ms_manage_emr`.
 - **Response**: صفحه‌بندی‌شده با کلیدهای `data`, `total`, `page`؛ هر آیتم شامل پروفایل پایه بیمار.
 
 ### GET /ms/v1/patients/{id}
-- **Permission**: `edit_posts` (پزشک/منشی).
+- **Permission**: `ms_manage_emr` (پزشک/منشی).
 - **Response**: پروفایل پایه با فیلدهای متای ذخیره‌شده.
 
 ### POST /ms/v1/visits
@@ -74,16 +74,16 @@
   "medications": ["Azithromycin 250mg", "Nasal spray"]
 }
 ```
-- **Permission**: `edit_posts`.
+- **Permission**: `ms_manage_emr`.
 - **Response**: `id`, `patient_id`, `provider_id`, `summary`, `diagnosis`, `medications`, `visit_date` (datetime ذخیره‌شده یا post_date).
 
 ### GET /ms/v1/visits/{id}
-- **Permission**: `edit_posts`.
+- **Permission**: `ms_manage_emr`.
 - **Response**: Visit payload شامل summary، diagnosis، medications و `visit_date`.
 
 ### GET /ms/v1/visits
 - **Query**: `patient_id`, `provider_id`, `date_from`, `date_to`, `per_page`, `page`.
-- **Permission**: `edit_posts`.
+- **Permission**: `ms_manage_emr`.
 - **Response**: صفحه‌بندی‌شده با آرایه visitها (دارای visit_date) و total/page.
 
 ## Payments & Wallet
@@ -107,7 +107,7 @@
 - **Flow**: بروزرسانی status پرداخت؛ در حالت `paid` کیف پول provider بلافاصله شارژ می‌شود.
 
 ### GET /ms/v1/wallets/{provider_id} (پیاده‌سازی فعلی)
-- **Permission**: `edit_posts` (منشی/پزشک).
+- **Permission**: `ms_manage_finance` (منشی/پزشک/مالی).
 - **Response**: `{ provider_id, balance, pending_balance }` (در صورت نبود رکورد مقدار صفر برگردانده می‌شود).
 
 ## SMS/Automation (پیاده‌سازی فعلی)
@@ -123,11 +123,11 @@
 
 ### POST /ms/v1/automation/rules
 - **Body**: rule DSL ساده `{ "event": "appointment.created", "condition": {"status": "pending_payment"}, "action": {"type": "sms", "template": "reminder_24h"}, "delay_minutes": 1440 }`
-- **Rule**: فقط admin/provider مجاز؛ ذخیره در جدول `ms_rules`.
+- **Rule**: فقط نقش‌های دارای `ms_manage_settings` (ادمین/مدیر کلینیک) مجاز؛ ذخیره در جدول `ms_rules`.
 
 ## Settings (پیاده‌سازی فعلی)
 - **هدف**: ذخیره و بازیابی تنظیمات مطب (اطلاعات کلینیک، ساعات کاری، قالب پیامک، تنظیمات پرداخت پایه).
-- **Permission**: فقط `manage_options`.
+- **Permission**: `ms_manage_settings`.
 - **Endpoints**:
   - `GET /ms/v1/settings` — دریافت تنظیمات ذخیره‌شده (با defaults در صورت نبود).
   - `POST|PUT|PATCH /ms/v1/settings` — بروزرسانی تنظیمات؛ payload نمونه:
@@ -174,21 +174,21 @@
 - **Response**: `id`, `subject`, `status` (open), `priority`, `patient_id`, `phone`, `email`, `messages[]` (با پیام اولیه).
 
 ### GET /ms/v1/support/tickets
-- **Permission**: `edit_posts` (منشی/پزشک/ادمین).
+- **Permission**: `ms_manage_support` (منشی/پزشک/ادمین).
 - **Query**: `status`, `patient_id`, `per_page`, `page`.
 - **Response**: صفحه‌بندی‌شده با آرایه تیکت‌ها و meta `{total, totalPages, page, per_page}`.
 
 ### GET /ms/v1/support/tickets/{id}
-- **Permission**: `edit_posts`.
+- **Permission**: `ms_manage_support`.
 - **Response**: جزئیات تیکت و آرایه پیام‌ها.
 
 ### POST /ms/v1/support/tickets/{id}/messages
-- **Permission**: `edit_posts`.
+- **Permission**: `ms_manage_support`.
 - **Body**: `{ "message": "پاسخ منشی..." }` — پیام به آرایه پیام‌ها اضافه می‌شود و شامل meta نویسنده (کاربر فعلی یا مهمان) و زمان ایجاد است.
 - **Response**: تیکت به‌روزشده.
 
 ### PATCH /ms/v1/support/tickets/{id}/status
-- **Permission**: `edit_posts`.
+- **Permission**: `ms_manage_support`.
 - **Body**: `{ "status": "open|pending|resolved|closed" }`.
 - **Response**: تیکت به‌روزشده.
 
@@ -201,7 +201,7 @@
 
 ### GET /ms/v1/reviews
 - **Query**: `provider_id` اختیاری برای فیلتر، `per_page`, `page`.
-- **Permission**: `edit_posts` (پزشک/منشی) برای جلوگیری از اسپم خواندن عمومی.
+- **Permission**: `ms_manage_growth` (پزشک/منشی) برای جلوگیری از اسپم خواندن عمومی.
 - **Response**: لیست صفحه‌بندی‌شده از بررسی‌ها با total/page.
 
 ### POST /ms/v1/profile-views
@@ -210,7 +210,7 @@
 - **Effect**: شمارنده بازدید پروفایل پزشک در جدول `ms_profile_stats` یک واحد افزایش می‌یابد.
 
 ### GET /ms/v1/providers/{provider_id}/growth
-- **Permission**: `edit_posts`.
+- **Permission**: `ms_manage_growth`.
 - **Response**: `{ provider_id, views, bookings, avg_rating, reviews }` با داده‌های جدول stats و خلاصه امتیازدهی.
 
 ## خطاهای استاندارد
@@ -228,10 +228,10 @@
 - ارسال مجدد (retry) با backoff تا 5 بار؛ لاگ وضعیت ارسال.
 
 ### پیاده‌سازی فعلی (API Gateway Module)
-- `GET /ms/v1/webhooks` — لیست hookهای فعال/غیرفعال (فقط ادمین)
-- `POST /ms/v1/webhooks` — ایجاد webhook جدید با فیلدهای `name`, `target_url`, `event`, `secret?`, `status?` (فقط ادمین)
-- `DELETE /ms/v1/webhooks/{id}` — حذف یک webhook (soft delete در MVP نیست)
-- `POST /ms/v1/webhooks/test` — ارسال رویداد تست/دلخواه به همه hookهایی که event یکسان دارند و گزارش کد پاسخ را برمی‌گرداند (فقط ادمین)
+- `GET /ms/v1/webhooks` — لیست hookهای فعال/غیرفعال (نیاز به `ms_manage_gateway`)
+- `POST /ms/v1/webhooks` — ایجاد webhook جدید با فیلدهای `name`, `target_url`, `event`, `secret?`, `status?` (نیاز به `ms_manage_gateway`)
+- `DELETE /ms/v1/webhooks/{id}` — حذف یک webhook (soft delete در MVP نیست) (نیاز به `ms_manage_gateway`)
+- `POST /ms/v1/webhooks/test` — ارسال رویداد تست/دلخواه به همه hookهایی که event یکسان دارند و گزارش کد پاسخ را برمی‌گرداند (نیاز به `ms_manage_gateway`)
 - HMAC امضای payload: هدر `X-MS-Signature` برابر `hash_hmac('sha256', body, secret)` و `X-MS-Event` برای نام رخداد؛ بدنه JSON شامل `{ event, payload, sent_at }`.
 - رویدادهای جاری: `appointment.booked` و `appointment.status_changed`.
 
@@ -239,10 +239,10 @@
 
 - `GET /ms/v1/providers` — لیست پزشکان/ارائه‌دهندگان با فیلتر specialty، جست‌وجوی متنی، pagination (`per_page`, `page`).
 - `GET /ms/v1/providers/{id}` — جزئیات پزشک به‌همراه لیست خدمات.
-- `POST /ms/v1/providers` — ایجاد/به‌روزرسانی پزشک (admin/editor capability) با فیلدهای `name`, `bio`, `specialties[]`, `rating`.
-- `POST /ms/v1/services` — ثبت خدمت جدید برای پزشک (admin/editor) با `provider_id`, `title`, `duration`, `price`, `description`.
+- `POST /ms/v1/providers` — ایجاد/به‌روزرسانی پزشک (نیاز به `ms_manage_directory`) با فیلدهای `name`, `bio`, `specialties[]`, `rating`.
+- `POST /ms/v1/services` — ثبت خدمت جدید برای پزشک (نیاز به `ms_manage_directory`) با `provider_id`, `title`, `duration`, `price`, `description`.
 - `GET /ms/v1/providers/{id}/services` — لیست خدمات فعال یک پزشک.
 
 ### Notes
 - همه متادیتا در meta post ذخیره می‌شود (`ms_specialties`, `ms_rating`, `ms_provider_id`, `ms_duration`, `ms_price`).
-- تمامی endpoints GET عمومی هستند؛ endpoints ایجاد نیازمند capability `edit_posts` است.
+- تمامی endpoints GET عمومی هستند؛ endpoints ایجاد نیازمند capability `ms_manage_directory` است.

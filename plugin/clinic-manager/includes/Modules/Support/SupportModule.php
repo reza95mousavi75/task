@@ -2,6 +2,7 @@
 
 namespace MS\Modules\Support;
 
+use MS\Core\Capabilities;
 use MS\Core\ModuleInterface;
 use MS\Core\ServiceContainer;
 
@@ -68,7 +69,7 @@ class SupportModule implements ModuleInterface
             'methods'             => 'GET',
             'callback'            => [$this, 'listTickets'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_SUPPORT);
             },
             'args'                => [
                 'status'    => ['sanitize_callback' => 'sanitize_text_field'],
@@ -82,7 +83,7 @@ class SupportModule implements ModuleInterface
             'methods'             => 'GET',
             'callback'            => [$this, 'getTicket'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_SUPPORT);
             },
         ]);
 
@@ -90,7 +91,7 @@ class SupportModule implements ModuleInterface
             'methods'             => 'POST',
             'callback'            => [$this, 'addMessage'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_SUPPORT);
             },
             'args'                => [
                 'message' => ['required' => true],
@@ -101,7 +102,7 @@ class SupportModule implements ModuleInterface
             'methods'             => 'PATCH',
             'callback'            => [$this, 'updateStatus'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_SUPPORT);
             },
             'args'                => [
                 'status' => ['required' => true, 'sanitize_callback' => 'sanitize_text_field'],

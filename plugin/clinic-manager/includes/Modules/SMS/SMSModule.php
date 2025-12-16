@@ -2,6 +2,7 @@
 
 namespace MS\Modules\SMS;
 
+use MS\Core\Capabilities;
 use MS\Core\ModuleInterface;
 use MS\Core\ServiceContainer;
 
@@ -71,7 +72,7 @@ class SMSModule implements ModuleInterface
             'methods'             => 'POST',
             'callback'            => [$this, 'createRule'],
             'permission_callback' => function () {
-                return current_user_can('manage_options');
+                return current_user_can(Capabilities::MANAGE_SETTINGS);
             },
             'args'                => [
                 'event'     => ['required' => true, 'sanitize_callback' => 'sanitize_text_field'],

@@ -85,7 +85,7 @@ interface ModuleContract {
 - صف async برای SMS/PDF و sync بیمه (Action Scheduler یا Redis Queue).
 
 ## امنیت و مجوزها
-- Capabilities: `manage_clinic`, `manage_appointments`, `manage_patients`, `manage_finance`، map به نقش‌ها.
+- Capabilities اختصاصی: `ms_manage_appointments`, `ms_manage_emr`, `ms_manage_finance`, `ms_manage_directory`, `ms_manage_growth`, `ms_manage_support`, `ms_manage_settings`, `ms_manage_gateway` (در activation ثبت می‌شوند و به نقش‌های Clinic Manager/Provider/Receptionist نگاشت می‌شوند؛ ادمین همه را دارد).
 - مالکیت داده: هر provider فقط داده خودش را می‌بیند؛ منشی با دسترسی شعبه محدود.
 - فیلدهای حساس (national_code, otp_hash) با encryption-at-rest و دسترسی کنترل‌شده در Repository.
 

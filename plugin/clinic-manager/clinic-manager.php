@@ -11,6 +11,7 @@ if (! defined('ABSPATH')) {
 }
 
 require_once plugin_dir_path(__FILE__) . 'includes/Core/ServiceContainer.php';
+require_once plugin_dir_path(__FILE__) . 'includes/Core/Capabilities.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Core/ModuleInterface.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Core/ModuleRegistry.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Core/Plugin.php';

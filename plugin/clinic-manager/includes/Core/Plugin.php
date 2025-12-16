@@ -36,6 +36,7 @@ class Plugin
         register_deactivation_hook(dirname(__DIR__, 2) . '/clinic-manager.php', [$this, 'deactivate']);
 
         add_action('init', function () {
+            Capabilities::register();
             $this->modules->bootActiveModules();
         });
 
@@ -48,6 +49,8 @@ class Plugin
      */
     public function activate()
     {
+        Capabilities::register();
+
         foreach ($this->modules->all() as $slug => $module) {
             $module->activate($this->container);
         }

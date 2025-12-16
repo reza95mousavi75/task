@@ -2,6 +2,7 @@
 
 namespace MS\Modules\Growth;
 
+use MS\Core\Capabilities;
 use MS\Core\ModuleInterface;
 use MS\Core\ServiceContainer;
 
@@ -69,7 +70,7 @@ class GrowthModule implements ModuleInterface
             'methods'             => 'GET',
             'callback'            => [$this, 'listReviews'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_GROWTH);
             },
             'args'                => [
                 'provider_id' => ['sanitize_callback' => 'absint'],
@@ -91,7 +92,7 @@ class GrowthModule implements ModuleInterface
             'methods'             => 'GET',
             'callback'            => [$this, 'getProviderGrowth'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_GROWTH);
             },
         ]);
     }

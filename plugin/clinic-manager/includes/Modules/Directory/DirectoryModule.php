@@ -2,6 +2,7 @@
 
 namespace MS\Modules\Directory;
 
+use MS\Core\Capabilities;
 use MS\Core\ModuleInterface;
 use MS\Core\ServiceContainer;
 
@@ -83,7 +84,7 @@ class DirectoryModule implements ModuleInterface
             'methods'             => 'POST',
             'callback'            => [$this, 'createProvider'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_DIRECTORY);
             },
             'args'                => [
                 'name'        => ['required' => true, 'sanitize_callback' => 'sanitize_text_field'],
@@ -97,7 +98,7 @@ class DirectoryModule implements ModuleInterface
             'methods'             => 'POST',
             'callback'            => [$this, 'createService'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_DIRECTORY);
             },
             'args'                => [
                 'provider_id' => ['required' => true, 'sanitize_callback' => 'absint'],

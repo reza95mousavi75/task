@@ -2,6 +2,7 @@
 
 namespace MS\Admin;
 
+use MS\Core\Capabilities;
 use MS\Core\ModuleRegistry;
 
 /**
@@ -29,7 +30,7 @@ class DashboardPage
             'ms-modules',
             __('Clinic Dashboard', 'clinic-manager'),
             __('Dashboard', 'clinic-manager'),
-            'edit_posts',
+            Capabilities::MANAGE_APPOINTMENTS,
             'ms-dashboard',
             [$this, 'renderPage']
         );
@@ -37,7 +38,7 @@ class DashboardPage
 
     public function renderPage()
     {
-        if (! current_user_can('edit_posts')) {
+        if (! current_user_can(Capabilities::MANAGE_APPOINTMENTS)) {
             return;
         }
 
@@ -87,7 +88,7 @@ class DashboardPage
 
     public function handleStatusChange()
     {
-        if (! current_user_can('edit_posts')) {
+        if (! current_user_can(Capabilities::MANAGE_APPOINTMENTS)) {
             wp_die(__('You do not have permission to change appointment status.', 'clinic-manager'));
         }
 

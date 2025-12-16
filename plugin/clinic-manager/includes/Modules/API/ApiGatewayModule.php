@@ -2,6 +2,7 @@
 
 namespace MS\Modules\API;
 
+use MS\Core\Capabilities;
 use MS\Core\ModuleInterface;
 use MS\Core\ServiceContainer;
 
@@ -55,14 +56,14 @@ class ApiGatewayModule implements ModuleInterface
                 'methods'             => 'GET',
                 'callback'            => [$this, 'listWebhooks'],
                 'permission_callback' => function () {
-                    return current_user_can('manage_options');
+                    return current_user_can(Capabilities::MANAGE_GATEWAY);
                 },
             ],
             [
                 'methods'             => 'POST',
                 'callback'            => [$this, 'createWebhook'],
                 'permission_callback' => function () {
-                    return current_user_can('manage_options');
+                    return current_user_can(Capabilities::MANAGE_GATEWAY);
                 },
                 'args'                => [
                     'name'       => ['sanitize_callback' => 'sanitize_text_field'],
@@ -78,7 +79,7 @@ class ApiGatewayModule implements ModuleInterface
             'methods'             => 'DELETE',
             'callback'            => [$this, 'deleteWebhook'],
             'permission_callback' => function () {
-                return current_user_can('manage_options');
+                return current_user_can(Capabilities::MANAGE_GATEWAY);
             },
         ]);
 
@@ -86,7 +87,7 @@ class ApiGatewayModule implements ModuleInterface
             'methods'             => 'POST',
             'callback'            => [$this, 'sendTestEvent'],
             'permission_callback' => function () {
-                return current_user_can('manage_options');
+                return current_user_can(Capabilities::MANAGE_GATEWAY);
             },
             'args'                => [
                 'event'   => ['sanitize_callback' => 'sanitize_text_field'],

@@ -2,6 +2,7 @@
 
 namespace MS\Modules\Appointment;
 
+use MS\Core\Capabilities;
 use MS\Core\ModuleInterface;
 use MS\Core\ServiceContainer;
 
@@ -90,7 +91,7 @@ class AppointmentModule implements ModuleInterface
             'methods'             => 'GET',
             'callback'            => [$this, 'listAppointments'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_APPOINTMENTS);
             },
             'args'                => [
                 'provider_id' => ['sanitize_callback' => 'absint'],
@@ -106,7 +107,7 @@ class AppointmentModule implements ModuleInterface
             'methods'             => 'GET',
             'callback'            => [$this, 'getAppointment'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_APPOINTMENTS);
             },
         ]);
 
@@ -114,7 +115,7 @@ class AppointmentModule implements ModuleInterface
             'methods'             => 'PATCH',
             'callback'            => [$this, 'updateStatus'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_APPOINTMENTS);
             },
             'args'                => [
                 'status' => [

@@ -2,6 +2,7 @@
 
 namespace MS\Modules\EMR;
 
+use MS\Core\Capabilities;
 use MS\Core\ModuleInterface;
 use MS\Core\ServiceContainer;
 
@@ -64,7 +65,9 @@ class EMRModule implements ModuleInterface
         register_rest_route('ms/v1', '/patients', [
             'methods'             => 'POST',
             'callback'            => [$this, 'createPatient'],
-            'permission_callback' => '__return_true',
+            'permission_callback' => function () {
+                return current_user_can(Capabilities::MANAGE_EMR);
+            },
             'args'                => [
                 'full_name'     => ['required' => true, 'sanitize_callback' => 'sanitize_text_field'],
                 'phone'         => ['required' => true, 'sanitize_callback' => 'sanitize_text_field'],
@@ -77,7 +80,7 @@ class EMRModule implements ModuleInterface
             'methods'             => 'GET',
             'callback'            => [$this, 'listPatients'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_EMR);
             },
             'args'                => [
                 'search'        => ['sanitize_callback' => 'sanitize_text_field'],
@@ -88,11 +91,11 @@ class EMRModule implements ModuleInterface
             ],
         ]);
 
-        register_rest_route('ms/v1', '/patients/(?P<id>\d+)', [
+        register_rest_route('ms/v1', '/patients/(?P<id>\\d+)', [
             'methods'             => 'GET',
             'callback'            => [$this, 'getPatient'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_EMR);
             },
         ]);
 
@@ -100,7 +103,7 @@ class EMRModule implements ModuleInterface
             'methods'             => 'POST',
             'callback'            => [$this, 'createVisit'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_EMR);
             },
             'args'                => [
                 'patient_id'  => ['required' => true, 'sanitize_callback' => 'absint'],
@@ -111,11 +114,11 @@ class EMRModule implements ModuleInterface
             ],
         ]);
 
-        register_rest_route('ms/v1', '/visits/(?P<id>\d+)', [
+        register_rest_route('ms/v1', '/visits/(?P<id>\\d+)', [
             'methods'             => 'GET',
             'callback'            => [$this, 'getVisit'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_EMR);
             },
         ]);
 
@@ -123,7 +126,7 @@ class EMRModule implements ModuleInterface
             'methods'             => 'GET',
             'callback'            => [$this, 'listVisits'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_EMR);
             },
             'args'                => [
                 'patient_id'  => ['sanitize_callback' => 'absint'],

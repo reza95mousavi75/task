@@ -2,6 +2,7 @@
 
 namespace MS\Modules\Finance;
 
+use MS\Core\Capabilities;
 use MS\Core\ModuleInterface;
 use MS\Core\ServiceContainer;
 
@@ -59,7 +60,7 @@ class FinanceModule implements ModuleInterface
             'methods'             => 'GET',
             'callback'            => [$this, 'getWallet'],
             'permission_callback' => function () {
-                return current_user_can('edit_posts');
+                return current_user_can(Capabilities::MANAGE_FINANCE);
             },
         ]);
     }

@@ -2,6 +2,7 @@
 
 namespace MS\Modules\Settings;
 
+use MS\Core\Capabilities;
 use MS\Core\ModuleInterface;
 use MS\Core\ServiceContainer;
 
@@ -51,7 +52,7 @@ class SettingsModule implements ModuleInterface
             'methods'             => 'GET',
             'callback'            => [$this, 'getSettings'],
             'permission_callback' => function () {
-                return current_user_can('manage_options');
+                return current_user_can(Capabilities::MANAGE_SETTINGS);
             },
         ]);
 
@@ -59,7 +60,7 @@ class SettingsModule implements ModuleInterface
             'methods'             => ['POST', 'PUT', 'PATCH'],
             'callback'            => [$this, 'updateSettings'],
             'permission_callback' => function () {
-                return current_user_can('manage_options');
+                return current_user_can(Capabilities::MANAGE_SETTINGS);
             },
         ]);
     }
