@@ -18,6 +18,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/Admin/ModulesPage.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Modules/Appointment/AppointmentModule.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Modules/EMR/EMRModule.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Modules/Finance/FinanceModule.php';
+require_once plugin_dir_path(__FILE__) . 'includes/Modules/SMS/SMSModule.php';
 
 add_action('plugins_loaded', function () {
     $container = new \MS\Core\ServiceContainer();
@@ -29,6 +30,7 @@ add_action('plugins_loaded', function () {
     $registry->register(new \MS\Modules\Appointment\AppointmentModule());
     $registry->register(new \MS\Modules\EMR\EMRModule());
     $registry->register(new \MS\Modules\Finance\FinanceModule());
+    $registry->register(new \MS\Modules\SMS\SMSModule());
 
     $plugin->boot();
 });

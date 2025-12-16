@@ -83,15 +83,15 @@
 - **Permission**: `edit_posts` (منشی/پزشک).
 - **Response**: `{ provider_id, balance, pending_balance }` (در صورت نبود رکورد مقدار صفر برگردانده می‌شود).
 
-## SMS/Automation
+## SMS/Automation (پیاده‌سازی فعلی)
 ### POST /ms/v1/otp
 - **Body**: `{ "phone": "+98912...", "context": "booking|login", "provider_id": 12 }`
 - **Response**: `challenge_id`, `expires_in`.
-- **Notes**: rate limit per phone/day؛ OTP hash در DB نگهداری و پس از مصرف حذف.
+- **Notes**: rate limit 3 درخواست در 5 دقیقه برای هر شماره؛ OTP با hash ذخیره می‌شود و در جدول `ms_otps` نگهداری می‌شود؛ پیامک با sender داخلی لاگ می‌شود.
 
 ### POST /ms/v1/automation/rules
 - **Body**: rule DSL ساده `{ "event": "appointment.created", "condition": {"status": "pending_payment"}, "action": {"type": "sms", "template": "reminder_24h"}, "delay_minutes": 1440 }`
-- **Rule**: فقط admin/provider مجاز؛ ذخیره در جدول `wp_ms_rules`.
+- **Rule**: فقط admin/provider مجاز؛ ذخیره در جدول `ms_rules`.
 
 ## خطاهای استاندارد
 - `400`: validation_error (جزئیات فیلد)
