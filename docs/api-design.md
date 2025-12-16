@@ -17,10 +17,12 @@
   "phone": "+989121234567",
   "service_id": 5,
   "provider_id": 12,
-  "slot_time": "2024-06-01 10:00"
+  "slot_time": "2024-06-01 10:00",
+  "otp_challenge_id": 15,
+  "otp_code": "123456"
 }
 ```
-- **Validation**: زمان معتبر، نیازمندی فیلدها، anti-double-booking روی provider+slot_time (پاسخ 409 در تعارض).
+- **Validation**: زمان معتبر، نیازمندی فیلدها، anti-double-booking روی provider+slot_time (پاسخ 409 در تعارض)، در صورت ارسال OTP هر دو فیلد challenge+code باید معتبر باشد.
 - **Response**: `id`, `status` (reserved) و `slot_time`.
 
 ### PATCH /ms/v1/appointments/{id}/status
@@ -88,6 +90,11 @@
 - **Body**: `{ "phone": "+98912...", "context": "booking|login", "provider_id": 12 }`
 - **Response**: `challenge_id`, `expires_in`.
 - **Notes**: rate limit 3 درخواست در 5 دقیقه برای هر شماره؛ OTP با hash ذخیره می‌شود و در جدول `ms_otps` نگهداری می‌شود؛ پیامک با sender داخلی لاگ می‌شود.
+
+### POST /ms/v1/otp/verify
+- **Body**: `{ "challenge_id": 10, "code": "123456", "phone": "+98912...", "context": "booking" }`
+- **Response**: `{ "valid": true, "challenge_id": 10 }`
+- **Notes**: در صورت انقضا/مصرف، خطای 410 برگردانده می‌شود؛ phone/context در صورت ارسال باید با رکورد اولیه تطبیق داشته باشد.
 
 ### POST /ms/v1/automation/rules
 - **Body**: rule DSL ساده `{ "event": "appointment.created", "condition": {"status": "pending_payment"}, "action": {"type": "sms", "template": "reminder_24h"}, "delay_minutes": 1440 }`

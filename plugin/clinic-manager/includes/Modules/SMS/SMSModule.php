@@ -7,6 +7,9 @@ use MS\Core\ServiceContainer;
 
 class SMSModule implements ModuleInterface
 {
+    /** @var ServiceContainer|null */
+    private $container;
+
     public function slug()
     {
         return 'sms';
@@ -19,7 +22,10 @@ class SMSModule implements ModuleInterface
 
     public function boot(ServiceContainer $container)
     {
+        $this->container = $container;
         add_action('rest_api_init', [$this, 'registerRoutes']);
+
+        add_filter('ms_sms_validate_otp', [$this, 'validateOtp'], 10, 5);
 
         $container->bind('sms.sender', function () {
             return new SmsSender();
@@ -46,6 +52,18 @@ class SMSModule implements ModuleInterface
                 'phone'       => ['required' => true, 'sanitize_callback' => 'sanitize_text_field'],
                 'context'     => ['sanitize_callback' => 'sanitize_text_field'],
                 'provider_id' => ['sanitize_callback' => 'absint'],
+            ],
+        ]);
+
+        register_rest_route('ms/v1', '/otp/verify', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'verifyOtp'],
+            'permission_callback' => '__return_true',
+            'args'                => [
+                'challenge_id' => ['required' => true, 'sanitize_callback' => 'absint'],
+                'code'         => ['required' => true, 'sanitize_callback' => 'sanitize_text_field'],
+                'phone'        => ['sanitize_callback' => 'sanitize_text_field'],
+                'context'      => ['sanitize_callback' => 'sanitize_text_field'],
             ],
         ]);
 
@@ -115,6 +133,25 @@ class SMSModule implements ModuleInterface
         ];
     }
 
+    public function verifyOtp($request)
+    {
+        $challengeId = absint($request['challenge_id'] ?? 0);
+        $code        = sanitize_text_field($request['code'] ?? '');
+        $phone       = sanitize_text_field($request['phone'] ?? '');
+        $context     = sanitize_text_field($request['context'] ?? '');
+
+        $result = apply_filters('ms_sms_validate_otp', true, $phone, $challengeId, $code, $context);
+
+        if (is_wp_error($result)) {
+            return $result;
+        }
+
+        return [
+            'valid'        => true,
+            'challenge_id' => $challengeId,
+        ];
+    }
+
     public function createRule($request)
     {
         global $wpdb;
@@ -153,8 +190,75 @@ class SMSModule implements ModuleInterface
         ];
     }
 
+    /**
+     * Validate an OTP entry and mark it consumed on success.
+     *
+     * @param bool|\WP_Error $valid
+     * @param string          $phone
+     * @param int             $challengeId
+     * @param string          $code
+     * @param string          $context
+     *
+     * @return bool|\WP_Error
+     */
+    public function validateOtp($valid, $phone, $challengeId, $code, $context = '')
+    {
+        global $wpdb;
+
+        $challengeId = absint($challengeId);
+        $code        = trim((string) $code);
+        $table       = $wpdb->prefix . 'ms_otps';
+
+        if (! $challengeId || ! $code) {
+            return new \WP_Error('ms_otp_invalid', __('Invalid OTP payload.', 'clinic-manager'), ['status' => 400]);
+        }
+
+        $otp = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$table} WHERE id = %d",
+            $challengeId
+        ));
+
+        if (! $otp) {
+            return new \WP_Error('ms_otp_not_found', __('OTP not found.', 'clinic-manager'), ['status' => 404]);
+        }
+
+        if ($phone && $otp->phone !== $phone) {
+            return new \WP_Error('ms_otp_phone_mismatch', __('Phone does not match OTP request.', 'clinic-manager'), ['status' => 400]);
+        }
+
+        if (! empty($otp->context) && $context && $otp->context !== $context) {
+            return new \WP_Error('ms_otp_context_mismatch', __('OTP context mismatch.', 'clinic-manager'), ['status' => 400]);
+        }
+
+        if ($otp->consumed_at) {
+            return new \WP_Error('ms_otp_consumed', __('OTP already used.', 'clinic-manager'), ['status' => 410]);
+        }
+
+        if (strtotime($otp->expires_at) < time()) {
+            return new \WP_Error('ms_otp_expired', __('OTP expired.', 'clinic-manager'), ['status' => 410]);
+        }
+
+        if (! wp_check_password($code, $otp->code_hash)) {
+            return new \WP_Error('ms_otp_invalid', __('Invalid OTP code.', 'clinic-manager'), ['status' => 401]);
+        }
+
+        $wpdb->update(
+            $table,
+            ['consumed_at' => current_time('mysql', true)],
+            ['id' => $challengeId],
+            ['%s'],
+            ['%d']
+        );
+
+        return true;
+    }
+
     private function resolveSender()
     {
+        if ($this->container && $this->container->has('sms.sender')) {
+            return $this->container->get('sms.sender');
+        }
+
         return new SmsSender();
     }
 

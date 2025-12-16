@@ -114,7 +114,7 @@ interface ModuleContract {
   - `includes/Modules/Appointment/AppointmentModule.php`: ماژول نوبت‌دهی اولیه با ثبت post type، ثبت statusهای سفارشی (reserved/confirmed/cancelled/noshow)، endpoint رزرو و بروزرسانی وضعیت، و ایجاد جداول `ms_appointments` و `ms_time_slots`.
   - `includes/Modules/EMR/EMRModule.php`: ماژول پرونده الکترونیک اولیه با post typeهای Patient و Visit و endpointهای ساخت/بازیابی بیمار و ثبت ویزیت.
   - `includes/Modules/Finance/FinanceModule.php`: ماژول مالی اولیه با جداول `ms_payments` و `ms_wallets`، endpoint ثبت پرداخت، webhook برای تغییر وضعیت و شارژ کیف پول، و endpoint خواندن مانده کیف پول پزشک.
-  - `includes/Modules/SMS/SMSModule.php`: ماژول پیامک/اتوماسیون با endpoint OTP، جدول `ms_otps` برای مدیریت کدها و جدول `ms_rules` برای قوانین اتوماسیون، به همراه Sender داخلی برای لاگ پیامک.
+  - `includes/Modules/SMS/SMSModule.php`: ماژول پیامک/اتوماسیون با endpoint OTP و verify، جدول `ms_otps` برای مدیریت کدها و جدول `ms_rules` برای قوانین اتوماسیون، به همراه Sender داخلی برای لاگ پیامک و فیلتر `ms_sms_validate_otp` برای مصرف OTP در ماژول‌ها.
 
 ### نحوه تست دستی در WordPress محلی
 1. پوشه‌ی `plugin/clinic-manager` را داخل `wp-content/plugins` کپی کنید.

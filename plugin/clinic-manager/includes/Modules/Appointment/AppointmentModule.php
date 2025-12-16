@@ -81,6 +81,8 @@ class AppointmentModule implements ModuleInterface
                 'service_id'   => ['sanitize_callback' => 'absint'],
                 'provider_id'  => ['sanitize_callback' => 'absint'],
                 'slot_time'    => ['sanitize_callback' => 'sanitize_text_field'],
+                'otp_challenge_id' => ['sanitize_callback' => 'absint'],
+                'otp_code'     => ['sanitize_callback' => 'sanitize_text_field'],
             ],
         ]);
 
@@ -106,6 +108,8 @@ class AppointmentModule implements ModuleInterface
         $serviceId   = absint($request['service_id'] ?? 0);
         $providerId  = absint($request['provider_id'] ?? 0);
         $slotTime    = sanitize_text_field($request['slot_time'] ?? '');
+        $otpId       = absint($request['otp_challenge_id'] ?? 0);
+        $otpCode     = sanitize_text_field($request['otp_code'] ?? '');
 
         $slotTimestamp = strtotime($slotTime) ?: 0;
 
@@ -115,6 +119,18 @@ class AppointmentModule implements ModuleInterface
 
         if (! $patientName || ! $phone || ! $slotTime) {
             return new \WP_Error('ms_invalid', __('Missing required fields', 'clinic-manager'), ['status' => 400]);
+        }
+
+        if ($otpId || $otpCode) {
+            if (! $otpId || ! $otpCode) {
+                return new \WP_Error('ms_otp_incomplete', __('OTP code and challenge are required together.', 'clinic-manager'), ['status' => 400]);
+            }
+
+            $verified = apply_filters('ms_sms_validate_otp', true, $phone, $otpId, $otpCode, 'booking');
+
+            if (is_wp_error($verified)) {
+                return $verified;
+            }
         }
 
         if ($this->hasConflict($providerId, $slotTime)) {
@@ -132,6 +148,7 @@ class AppointmentModule implements ModuleInterface
                 'ms_provider_id'  => $providerId,
                 'ms_slot_time'    => $slotTime,
                 'ms_status'       => 'reserved',
+                'ms_otp_challenge_id' => $otpId,
             ],
         ]);
 

@@ -53,4 +53,12 @@ class ServiceContainer
 
         return $instance;
     }
+
+    /**
+     * Determine if a binding or instance exists.
+     */
+    public function has($id)
+    {
+        return isset($this->instances[$id]) || isset($this->bindings[$id]);
+    }
 }
