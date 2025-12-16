@@ -44,11 +44,25 @@
             slot_time: form.slot_time.value,
         };
 
+        var otpCode = form.otp_code && form.otp_code.value;
+        var otpChallenge = form.otp_challenge_id && form.otp_challenge_id.value;
+
+        if (otpCode && otpChallenge) {
+            payload.otp_code = otpCode;
+            payload.otp_challenge_id = parseInt(otpChallenge, 10);
+        }
+
+        var headers = {
+            'Content-Type': 'application/json',
+        };
+
+        if (typeof msBookingData !== 'undefined' && msBookingData.nonce) {
+            headers['X-WP-Nonce'] = msBookingData.nonce;
+        }
+
         fetch(endpoint, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: headers,
             body: JSON.stringify(payload),
         })
             .then(function (res) {
@@ -72,9 +86,76 @@
             });
     }
 
+    function sendOtp(event) {
+        event.preventDefault();
+
+        if (typeof msBookingData === 'undefined' || !msBookingData.otpEndpoint) {
+            return;
+        }
+
+        var form = document.querySelector('.ms-booking-form');
+        var otpButton = document.getElementById('ms-otp-button');
+        var otpStatus = document.querySelector('.ms-otp-status');
+        var challengeInput = document.getElementById('ms-otp-challenge');
+
+        if (!form || !otpButton || !otpStatus) {
+            return;
+        }
+
+        var phone = form.phone.value;
+        var providerId = parseInt(form.provider_id.value || '0', 10);
+
+        if (!phone) {
+            otpStatus.textContent = window.wp && wp.i18n ? wp.i18n.__('Phone is required for OTP', 'clinic-manager') : 'Phone is required for OTP';
+            return;
+        }
+
+        var headers = {
+            'Content-Type': 'application/json',
+        };
+
+        if (msBookingData.nonce) {
+            headers['X-WP-Nonce'] = msBookingData.nonce;
+        }
+
+        otpButton.disabled = true;
+        otpStatus.textContent = window.wp && wp.i18n ? wp.i18n.__('Sending code…', 'clinic-manager') : 'Sending code…';
+
+        fetch(msBookingData.otpEndpoint, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                phone: phone,
+                provider_id: providerId,
+                context: 'booking',
+            }),
+        })
+            .then(function (res) {
+                if (!res.ok) {
+                    return res.json().then(function (data) {
+                        throw new Error(data.message || 'Unable to send OTP');
+                    });
+                }
+                return res.json();
+            })
+            .then(function (data) {
+                if (challengeInput) {
+                    challengeInput.value = data.challenge_id;
+                }
+                otpStatus.textContent = window.wp && wp.i18n ? wp.i18n.__('Code sent. Please check your messages.', 'clinic-manager') : 'Code sent. Please check your messages.';
+            })
+            .catch(function (err) {
+                otpStatus.textContent = err.message;
+            })
+            .finally(function () {
+                otpButton.disabled = false;
+            });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         var providerSelect = document.getElementById('ms-provider');
         var form = document.querySelector('.ms-booking-form');
+        var otpButton = document.getElementById('ms-otp-button');
 
         if (providerSelect) {
             providerSelect.addEventListener('change', function (event) {
@@ -84,6 +165,10 @@
 
         if (form) {
             form.addEventListener('submit', handleSubmit);
+        }
+
+        if (otpButton) {
+            otpButton.addEventListener('click', sendOtp);
         }
     });
 })();

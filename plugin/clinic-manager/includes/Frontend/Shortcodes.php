@@ -45,6 +45,8 @@ class Shortcodes
 
         wp_localize_script('ms-booking', 'msBookingData', [
             'endpoint'  => rest_url('ms/v1/appointments'),
+            'otpEndpoint' => rest_url('ms/v1/otp'),
+            'nonce'     => wp_create_nonce('wp_rest'),
             'providers' => $providers,
             'services'  => $services,
         ]);
@@ -60,6 +62,15 @@ class Shortcodes
                 <div class="ms-field">
                     <label for="ms-phone"><?php esc_html_e('Phone', 'clinic-manager'); ?></label>
                     <input type="tel" id="ms-phone" name="phone" required />
+                </div>
+                <div class="ms-field ms-otp">
+                    <label for="ms-otp-code"><?php esc_html_e('Verification code', 'clinic-manager'); ?></label>
+                    <div class="ms-otp-row">
+                        <input type="text" id="ms-otp-code" name="otp_code" placeholder="<?php esc_attr_e('Enter code (optional)', 'clinic-manager'); ?>" />
+                        <button type="button" class="ms-otp-button" id="ms-otp-button"><?php esc_html_e('Send code', 'clinic-manager'); ?></button>
+                    </div>
+                    <input type="hidden" id="ms-otp-challenge" name="otp_challenge_id" />
+                    <div class="ms-otp-status" role="status" aria-live="polite"></div>
                 </div>
                 <div class="ms-field">
                     <label for="ms-provider"><?php esc_html_e('Provider', 'clinic-manager'); ?></label>

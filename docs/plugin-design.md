@@ -132,7 +132,7 @@ interface ModuleContract {
 7. در Admin، post typeهای `Appointments`، `Patients` و `Visits` برای مشاهده رکوردها ظاهر می‌شوند؛ همچنین می‌توانید با `GET /wp-json/ms/v1/patients?search=09...` یا `GET /wp-json/ms/v1/visits?patient_id=991` جستجو و لیست را از طریق API انجام دهید.
 8. تست مالی: با `POST /wp-json/ms/v1/payments` و بدنه‌ی `{ "provider_id": 7, "amount": 120000, "method": "online" }` پرداختی ایجاد کنید (status اولیه `pending`). سپس با تنظیم `ms_payment_webhook_secret` و ارسال درخواست به `/wp-json/ms/v1/payments/webhook` با بدنه‌ی `{ "payment_id": <id>, "status": "paid" }`، مانده کیف پول پزشک را از `/wp-json/ms/v1/wallets/7` مشاهده کنید.
 9. تست پشتیبانی: با `POST /wp-json/ms/v1/support/tickets` یک تیکت بسازید، سپس با `POST /wp-json/ms/v1/support/tickets/{id}/messages` پاسخ منشی را ثبت و با `PATCH /wp-json/ms/v1/support/tickets/{id}/status` وضعیت را به `resolved` تغییر دهید.
-10. تست شورتکد فرانت‌اند: یک صفحه جدید بسازید و `[ms_provider_directory]` را برای نمایش پزشکان و `[ms_booking_form]` را برای رزرو ساده قرار دهید؛ فرم با REST `POST /ms/v1/appointments` فراخوانی می‌شود و پس از موفقیت پیام «Appointment booked!» نمایش می‌دهد.
+10. تست شورتکد فرانت‌اند: یک صفحه جدید بسازید و `[ms_provider_directory]` را برای نمایش پزشکان و `[ms_booking_form]` را برای رزرو ساده قرار دهید؛ فرم با REST `POST /ms/v1/appointments` فراخوانی می‌شود، دکمه «Send code» در همان فرم با `POST /ms/v1/otp` کد تایید را ارسال می‌کند و در صورت درج کد معتبر، رزرو با `otp_challenge_id` ثبت می‌شود؛ پس از موفقیت پیام «Appointment booked!» نمایش می‌دهد.
 
 ### Directory module
 - Post types: `ms_provider`, `ms_service` (show_ui true, non-public, REST enabled).
