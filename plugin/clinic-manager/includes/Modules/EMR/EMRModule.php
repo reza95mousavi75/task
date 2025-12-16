@@ -73,6 +73,21 @@ class EMRModule implements ModuleInterface
             ],
         ]);
 
+        register_rest_route('ms/v1', '/patients', [
+            'methods'             => 'GET',
+            'callback'            => [$this, 'listPatients'],
+            'permission_callback' => function () {
+                return current_user_can('edit_posts');
+            },
+            'args'                => [
+                'search'        => ['sanitize_callback' => 'sanitize_text_field'],
+                'phone'         => ['sanitize_callback' => 'sanitize_text_field'],
+                'national_code' => ['sanitize_callback' => 'sanitize_text_field'],
+                'per_page'      => ['sanitize_callback' => 'absint'],
+                'page'          => ['sanitize_callback' => 'absint'],
+            ],
+        ]);
+
         register_rest_route('ms/v1', '/patients/(?P<id>\d+)', [
             'methods'             => 'GET',
             'callback'            => [$this, 'getPatient'],
@@ -102,6 +117,22 @@ class EMRModule implements ModuleInterface
             'permission_callback' => function () {
                 return current_user_can('edit_posts');
             },
+        ]);
+
+        register_rest_route('ms/v1', '/visits', [
+            'methods'             => 'GET',
+            'callback'            => [$this, 'listVisits'],
+            'permission_callback' => function () {
+                return current_user_can('edit_posts');
+            },
+            'args'                => [
+                'patient_id'  => ['sanitize_callback' => 'absint'],
+                'provider_id' => ['sanitize_callback' => 'absint'],
+                'date_from'   => ['sanitize_callback' => 'sanitize_text_field'],
+                'date_to'     => ['sanitize_callback' => 'sanitize_text_field'],
+                'per_page'    => ['sanitize_callback' => 'absint'],
+                'page'        => ['sanitize_callback' => 'absint'],
+            ],
         ]);
     }
 
@@ -137,6 +168,54 @@ class EMRModule implements ModuleInterface
             'phone'        => $phone,
             'national_code'=> $nationalCode,
             'meta'         => is_array($meta) ? $meta : [],
+        ];
+    }
+
+    public function listPatients($request)
+    {
+        $search       = sanitize_text_field($request['search'] ?? '');
+        $phone        = sanitize_text_field($request['phone'] ?? '');
+        $nationalCode = sanitize_text_field($request['national_code'] ?? '');
+        $perPage      = absint($request['per_page'] ?? 20);
+        $page         = absint($request['page'] ?? 1);
+
+        $metaQuery = [];
+
+        if ($phone) {
+            $metaQuery[] = [
+                'key'     => 'ms_phone',
+                'value'   => $phone,
+                'compare' => 'LIKE',
+            ];
+        }
+
+        if ($nationalCode) {
+            $metaQuery[] = [
+                'key'     => 'ms_national_code',
+                'value'   => $nationalCode,
+                'compare' => 'LIKE',
+            ];
+        }
+
+        $queryArgs = [
+            'post_type'      => 'ms_patient',
+            'post_status'    => ['publish'],
+            's'              => $search,
+            'posts_per_page' => $perPage > 0 ? min($perPage, 50) : 20,
+            'paged'          => max(1, $page),
+            'meta_query'     => $metaQuery,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+        ];
+
+        $query = new \WP_Query($queryArgs);
+
+        $data = array_map([$this, 'formatPatient'], $query->posts);
+
+        return [
+            'data'  => $data,
+            'total' => (int) $query->found_posts,
+            'page'  => (int) $queryArgs['paged'],
         ];
     }
 
@@ -180,6 +259,7 @@ class EMRModule implements ModuleInterface
                 'ms_provider_id' => $providerId,
                 'ms_diagnosis'   => $diagnosis,
                 'ms_medications' => is_array($meds) ? wp_json_encode($meds) : '[]',
+                'ms_visit_date'  => current_time('mysql'),
             ],
         ]);
 
@@ -206,6 +286,94 @@ class EMRModule implements ModuleInterface
             return new \WP_Error('ms_not_found', __('Visit not found.', 'clinic-manager'), ['status' => 404]);
         }
 
+        return $this->formatVisit($post);
+    }
+
+    public function listVisits($request)
+    {
+        $patientId  = absint($request['patient_id'] ?? 0);
+        $providerId = absint($request['provider_id'] ?? 0);
+        $dateFrom   = sanitize_text_field($request['date_from'] ?? '');
+        $dateTo     = sanitize_text_field($request['date_to'] ?? '');
+        $perPage    = absint($request['per_page'] ?? 20);
+        $page       = absint($request['page'] ?? 1);
+
+        $metaQuery = [];
+
+        if ($patientId) {
+            $metaQuery[] = [
+                'key'     => 'ms_patient_id',
+                'value'   => $patientId,
+                'compare' => '=',
+            ];
+        }
+
+        if ($providerId) {
+            $metaQuery[] = [
+                'key'     => 'ms_provider_id',
+                'value'   => $providerId,
+                'compare' => '=',
+            ];
+        }
+
+        if ($dateFrom || $dateTo) {
+            $range = ['relation' => 'AND'];
+
+            if ($dateFrom) {
+                $range[] = [
+                    'key'     => 'ms_visit_date',
+                    'value'   => $dateFrom,
+                    'compare' => '>=',
+                    'type'    => 'DATETIME',
+                ];
+            }
+
+            if ($dateTo) {
+                $range[] = [
+                    'key'     => 'ms_visit_date',
+                    'value'   => $dateTo,
+                    'compare' => '<=',
+                    'type'    => 'DATETIME',
+                ];
+            }
+
+            $metaQuery[] = $range;
+        }
+
+        $queryArgs = [
+            'post_type'      => 'ms_visit',
+            'post_status'    => ['publish'],
+            'posts_per_page' => $perPage > 0 ? min($perPage, 50) : 20,
+            'paged'          => max(1, $page),
+            'meta_query'     => $metaQuery,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+        ];
+
+        $query = new \WP_Query($queryArgs);
+
+        $data = array_map([$this, 'formatVisit'], $query->posts);
+
+        return [
+            'data'  => $data,
+            'total' => (int) $query->found_posts,
+            'page'  => (int) $queryArgs['paged'],
+        ];
+    }
+
+    private function formatPatient($post)
+    {
+        return [
+            'id'            => $post->ID,
+            'full_name'     => $post->post_title,
+            'phone'         => get_post_meta($post->ID, 'ms_phone', true),
+            'national_code' => get_post_meta($post->ID, 'ms_national_code', true),
+            'meta'          => json_decode(get_post_meta($post->ID, 'ms_meta', true) ?: '{}', true),
+        ];
+    }
+
+    private function formatVisit($post)
+    {
         return [
             'id'           => $post->ID,
             'patient_id'   => (int) get_post_meta($post->ID, 'ms_patient_id', true),
@@ -213,6 +381,7 @@ class EMRModule implements ModuleInterface
             'summary'      => $post->post_content,
             'diagnosis'    => get_post_meta($post->ID, 'ms_diagnosis', true),
             'medications'  => json_decode(get_post_meta($post->ID, 'ms_medications', true) ?: '[]', true),
+            'visit_date'   => get_post_meta($post->ID, 'ms_visit_date', true) ?: $post->post_date,
         ];
     }
 }

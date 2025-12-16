@@ -54,6 +54,11 @@
 - **Permission**: عمومی (برای سناریوی OTP/رزرو سریع) ولی باید همراه rate-limit سراسری باشد.
 - **Response**: `id`, `full_name`, `phone`, `national_code`, `meta`.
 
+### GET /ms/v1/patients
+- **Query**: `search` (نام/تلفن)، `phone`, `national_code`, `per_page`, `page`.
+- **Permission**: `edit_posts`.
+- **Response**: صفحه‌بندی‌شده با کلیدهای `data`, `total`, `page`؛ هر آیتم شامل پروفایل پایه بیمار.
+
 ### GET /ms/v1/patients/{id}
 - **Permission**: `edit_posts` (پزشک/منشی).
 - **Response**: پروفایل پایه با فیلدهای متای ذخیره‌شده.
@@ -70,11 +75,16 @@
 }
 ```
 - **Permission**: `edit_posts`.
-- **Response**: `id`, `patient_id`, `provider_id`, `summary`, `diagnosis`, `medications`.
+- **Response**: `id`, `patient_id`, `provider_id`, `summary`, `diagnosis`, `medications`, `visit_date` (datetime ذخیره‌شده یا post_date).
 
 ### GET /ms/v1/visits/{id}
 - **Permission**: `edit_posts`.
-- **Response**: Visit payload شامل summary، diagnosis، medications و metaهای مربوط.
+- **Response**: Visit payload شامل summary، diagnosis، medications و `visit_date`.
+
+### GET /ms/v1/visits
+- **Query**: `patient_id`, `provider_id`, `date_from`, `date_to`, `per_page`, `page`.
+- **Permission**: `edit_posts`.
+- **Response**: صفحه‌بندی‌شده با آرایه visitها (دارای visit_date) و total/page.
 
 ## Payments & Wallet
 ### POST /ms/v1/payments (پیاده‌سازی فعلی)
