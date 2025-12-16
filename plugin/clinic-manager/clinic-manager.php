@@ -16,6 +16,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/Core/ModuleRegistry.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Core/Plugin.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Admin/ModulesPage.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Modules/Appointment/AppointmentModule.php';
+require_once plugin_dir_path(__FILE__) . 'includes/Modules/EMR/EMRModule.php';
 
 add_action('plugins_loaded', function () {
     $container = new \MS\Core\ServiceContainer();
@@ -25,6 +26,7 @@ add_action('plugins_loaded', function () {
 
     // Register modules here.
     $registry->register(new \MS\Modules\Appointment\AppointmentModule());
+    $registry->register(new \MS\Modules\EMR\EMRModule());
 
     $plugin->boot();
 });

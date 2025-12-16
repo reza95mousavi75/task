@@ -33,26 +33,31 @@
 
 ## Patient & EMR (Mini)
 ### POST /ms/v1/patients
-- **Body**: `{"full_name":"...", "phone":"...", "national_code":"...", "otp":"123456"}` (OTP اختیاری در حالت reception entry)
-- **Response**: `patient_id`, `is_new`, `jwt` (اگر ثبت‌نام کامل شد).
+- **Body (پیاده‌سازی فعلی)**: `{ "full_name":"...", "phone":"...", "national_code":"...", "meta": {"blood_type":"A+"} }`
+- **Permission**: عمومی (برای سناریوی OTP/رزرو سریع) ولی باید همراه rate-limit سراسری باشد.
+- **Response**: `id`, `full_name`, `phone`, `national_code`, `meta`.
 
-### GET /ms/v1/patients/{id}/records
-- **Response**: پروفایل + آرایه ویزیت‌ها `{visit_id, diagnosis, meds[], created_at}` و لینک‌های فایل امن.
+### GET /ms/v1/patients/{id}
+- **Permission**: `edit_posts` (پزشک/منشی).
+- **Response**: پروفایل پایه با فیلدهای متای ذخیره‌شده.
 
 ### POST /ms/v1/visits
-- **Body**:
+- **Body (پیاده‌سازی فعلی)**:
 ```json
 {
-  "appointment_id": 991,
+  "patient_id": 991,
   "provider_id": 12,
+  "summary": "Short visit note",
   "diagnosis": "Sinusitis",
-  "recommendations": "Rest + nasal spray",
-  "meds": [
-    {"drug_id": 101, "dose": "2x/day", "duration": "5d"}
-  ]
+  "medications": ["Azithromycin 250mg", "Nasal spray"]
 }
 ```
-- **Response**: `visit_id`, `prescription_pdf_url`.
+- **Permission**: `edit_posts`.
+- **Response**: `id`, `patient_id`, `provider_id`, `summary`, `diagnosis`, `medications`.
+
+### GET /ms/v1/visits/{id}
+- **Permission**: `edit_posts`.
+- **Response**: Visit payload شامل summary، diagnosis، medications و metaهای مربوط.
 
 ## Payments & Wallet
 ### POST /ms/v1/payments/webhook

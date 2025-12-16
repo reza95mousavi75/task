@@ -112,6 +112,7 @@ interface ModuleContract {
   - `includes/Core/Plugin.php`: اتصال lifecycle وردپرس (activate/deactivate) به ماژول‌ها و register کردن منوی Admin برای مدیریت ماژول‌ها.
   - `includes/Admin/ModulesPage.php`: صفحه‌ی داشبورد برای فعال/غیرفعال کردن ماژول‌ها (state در `wp_options` ذخیره می‌شود).
   - `includes/Modules/Appointment/AppointmentModule.php`: ماژول نوبت‌دهی اولیه با ثبت post type، ثبت statusهای سفارشی (reserved/confirmed/cancelled/noshow)، endpoint رزرو و بروزرسانی وضعیت، و ایجاد جداول `ms_appointments` و `ms_time_slots`.
+  - `includes/Modules/EMR/EMRModule.php`: ماژول پرونده الکترونیک اولیه با post typeهای Patient و Visit و endpointهای ساخت/بازیابی بیمار و ثبت ویزیت.
 
 ### نحوه تست دستی در WordPress محلی
 1. پوشه‌ی `plugin/clinic-manager` را داخل `wp-content/plugins` کپی کنید.

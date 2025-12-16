@@ -47,17 +47,6 @@ class AppointmentModule implements ModuleInterface
             'map_meta_cap' => true,
             'menu_icon'    => 'dashicons-calendar-alt',
         ]);
-
-        register_post_type('ms_patient', [
-            'label'        => __('Patients', 'clinic-manager'),
-            'public'       => false,
-            'show_ui'      => true,
-            'supports'     => ['title', 'custom-fields'],
-            'show_in_rest' => true,
-            'capability_type' => 'post',
-            'map_meta_cap' => true,
-            'menu_icon'    => 'dashicons-id',
-        ]);
     }
 
     public function registerStatuses()
