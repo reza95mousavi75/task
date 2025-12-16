@@ -118,6 +118,7 @@ interface ModuleContract {
   - `includes/Modules/SMS/SMSModule.php`: ماژول پیامک/اتوماسیون با endpoint OTP و verify، جدول `ms_otps` برای مدیریت کدها و جدول `ms_rules` برای قوانین اتوماسیون، به همراه Sender داخلی برای لاگ پیامک و فیلتر `ms_sms_validate_otp` برای مصرف OTP در ماژول‌ها.
   - `includes/Modules/Growth/GrowthModule.php`: ماژول رشد/مارکتینگ با post type نقد و بررسی، endpoint ثبت و لیست بررسی‌ها، شمارنده بازدید پروفایل پزشک و خروجی آماری (بازدید، تعداد رزرو/بازخورد و میانگین امتیاز).
   - `includes/Modules/API/ApiGatewayModule.php`: ماژول API Gateway/Webhooks با جدول `ms_webhooks`، endpoint مدیریت و تست وبهوک‌ها، امضای HMAC در هدر، و dispatch خودکار رویدادهای `appointment.booked` و `appointment.status_changed`.
+  - `includes/Modules/Support/SupportModule.php`: ماژول پشتیبانی با post type `ms_ticket` و endpointهای ایجاد تیکت، لیست/جزئیات، افزودن پیام و بروزرسانی status (open|pending|resolved|closed) برای پنل منشی/پزشک.
 
 ### نحوه تست دستی در WordPress محلی
 1. پوشه‌ی `plugin/clinic-manager` را داخل `wp-content/plugins` کپی کنید.
@@ -128,6 +129,7 @@ interface ModuleContract {
 6. وضعیت نوبت را با `PATCH /wp-json/ms/v1/appointments/{id}/status` و بدنه‌ی `{ "status": "confirmed" }` بروزرسانی کنید؛ post_status به صورت خودکار به status مرتبط (`ms_confirmed`) تغییر می‌کند.
 7. در Admin، post typeهای `Appointments`، `Patients` و `Visits` برای مشاهده رکوردها ظاهر می‌شوند؛ همچنین می‌توانید با `GET /wp-json/ms/v1/patients?search=09...` یا `GET /wp-json/ms/v1/visits?patient_id=991` جستجو و لیست را از طریق API انجام دهید.
 8. تست مالی: با `POST /wp-json/ms/v1/payments` و بدنه‌ی `{ "provider_id": 7, "amount": 120000, "method": "online" }` پرداختی ایجاد کنید (status اولیه `pending`). سپس با تنظیم `ms_payment_webhook_secret` و ارسال درخواست به `/wp-json/ms/v1/payments/webhook` با بدنه‌ی `{ "payment_id": <id>, "status": "paid" }`، مانده کیف پول پزشک را از `/wp-json/ms/v1/wallets/7` مشاهده کنید.
+9. تست پشتیبانی: با `POST /wp-json/ms/v1/support/tickets` یک تیکت بسازید، سپس با `POST /wp-json/ms/v1/support/tickets/{id}/messages` پاسخ منشی را ثبت و با `PATCH /wp-json/ms/v1/support/tickets/{id}/status` وضعیت را به `resolved` تغییر دهید.
 
 ### Directory module
 - Post types: `ms_provider`, `ms_service` (show_ui true, non-public, REST enabled).

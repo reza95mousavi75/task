@@ -157,6 +157,42 @@
 ```
 
 
+## Support/Ticketing (پیاده‌سازی فعلی)
+### POST /ms/v1/support/tickets
+- **هدف**: ثبت تیکت پشتیبانی از سمت بیمار/کاربر (بدون نیاز به احراز هویت) با امکان اتصال به patient.
+- **Body**:
+```json
+{
+  "subject": "مشکل در پرداخت",
+  "message": "بعد از پرداخت خطا دیدم.",
+  "patient_id": 123,
+  "phone": "+98912...",
+  "email": "patient@example.com",
+  "priority": "normal|high"
+}
+```
+- **Response**: `id`, `subject`, `status` (open), `priority`, `patient_id`, `phone`, `email`, `messages[]` (با پیام اولیه).
+
+### GET /ms/v1/support/tickets
+- **Permission**: `edit_posts` (منشی/پزشک/ادمین).
+- **Query**: `status`, `patient_id`, `per_page`, `page`.
+- **Response**: صفحه‌بندی‌شده با آرایه تیکت‌ها و meta `{total, totalPages, page, per_page}`.
+
+### GET /ms/v1/support/tickets/{id}
+- **Permission**: `edit_posts`.
+- **Response**: جزئیات تیکت و آرایه پیام‌ها.
+
+### POST /ms/v1/support/tickets/{id}/messages
+- **Permission**: `edit_posts`.
+- **Body**: `{ "message": "پاسخ منشی..." }` — پیام به آرایه پیام‌ها اضافه می‌شود و شامل meta نویسنده (کاربر فعلی یا مهمان) و زمان ایجاد است.
+- **Response**: تیکت به‌روزشده.
+
+### PATCH /ms/v1/support/tickets/{id}/status
+- **Permission**: `edit_posts`.
+- **Body**: `{ "status": "open|pending|resolved|closed" }`.
+- **Response**: تیکت به‌روزشده.
+
+
 ## Growth/Marketing (پیاده‌سازی فعلی)
 ### POST /ms/v1/reviews
 - **Body**: `{ "provider_id": 22, "rating": 5, "title": "Great visit", "comment": "...", "patient_name": "Ali" }`
