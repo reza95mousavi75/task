@@ -115,3 +115,7 @@
 - Staging با داده‌ی نمونه و تست کانکارنسی برای جلوگیری از double-booking.
 - Checklist امنیتی و مانیتورینگ قبل از go-live.
 - استقرار ماژولار: امکان غیر‌فعال‌کردن ماژول بدون از دست رفتن داده (migration‌ها idempotent).
+
+### Directory / Provider registry
+- ثبت داده‌های پزشک و خدمات روی post types اختصاصی تا با هسته WordPress و meta API منطبق باشد.
+- Provider list API به‌عنوان منبع واحد برای ماژول‌های رزرو، رشد و مالی عمل می‌کند؛ meta شامل تخصص‌ها و امتیاز تجمیعی است.

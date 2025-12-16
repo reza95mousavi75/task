@@ -126,3 +126,9 @@ interface ModuleContract {
 6. وضعیت نوبت را با `PATCH /wp-json/ms/v1/appointments/{id}/status` و بدنه‌ی `{ "status": "confirmed" }` بروزرسانی کنید؛ post_status به صورت خودکار به status مرتبط (`ms_confirmed`) تغییر می‌کند.
 7. در Admin، post typeهای `Appointments`، `Patients` و `Visits` برای مشاهده رکوردها ظاهر می‌شوند؛ همچنین می‌توانید با `GET /wp-json/ms/v1/patients?search=09...` یا `GET /wp-json/ms/v1/visits?patient_id=991` جستجو و لیست را از طریق API انجام دهید.
 8. تست مالی: با `POST /wp-json/ms/v1/payments` و بدنه‌ی `{ "provider_id": 7, "amount": 120000, "method": "online" }` پرداختی ایجاد کنید (status اولیه `pending`). سپس با تنظیم `ms_payment_webhook_secret` و ارسال درخواست به `/wp-json/ms/v1/payments/webhook` با بدنه‌ی `{ "payment_id": <id>, "status": "paid" }`، مانده کیف پول پزشک را از `/wp-json/ms/v1/wallets/7` مشاهده کنید.
+
+### Directory module
+- Post types: `ms_provider`, `ms_service` (show_ui true, non-public, REST enabled).
+- REST: list/get providers, create provider (admin), create service (admin), list services by provider.
+- Activation: only flushes rewrite rules; data حفظ می‌شود. ورودی‌ها sanitize می‌شوند (`sanitize_text_field`, `wp_kses_post`, `absint`, `floatval`).
+- خروجی provider شامل خدمات مرتبط است تا داشبورد/فرانت‌اند بتواند کارت پزشک و خدمات را با یک درخواست واکشی کند.

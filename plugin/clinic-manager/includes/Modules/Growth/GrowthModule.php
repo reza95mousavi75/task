@@ -21,6 +21,8 @@ class GrowthModule implements ModuleInterface
     {
         add_action('init', [$this, 'registerPostTypes']);
         add_action('rest_api_init', [$this, 'registerRoutes']);
+        add_action('ms_appointment_booked', [$this, 'incrementBooking']);
+        add_action('ms_appointment_status_changed', [$this, 'incrementBooking']);
     }
 
     public function activate(ServiceContainer $container)
@@ -182,6 +184,28 @@ class GrowthModule implements ModuleInterface
         );
 
         return ['provider_id' => $providerId, 'views' => (int) $this->getStatValue($providerId, 'views')];
+    }
+
+    public function incrementBooking($providerId)
+    {
+        global $wpdb;
+
+        $providerId = absint($providerId);
+        if ($providerId <= 0) {
+            return;
+        }
+
+        $table = $wpdb->prefix . 'ms_profile_stats';
+        $now   = current_time('mysql');
+
+        $wpdb->query(
+            $wpdb->prepare(
+                "INSERT INTO {$table} (provider_id, views, bookings, updated_at) VALUES (%d, 0, 1, %s)
+                ON DUPLICATE KEY UPDATE bookings = bookings + 1, updated_at = VALUES(updated_at)",
+                $providerId,
+                $now
+            )
+        );
     }
 
     public function getProviderGrowth($request)

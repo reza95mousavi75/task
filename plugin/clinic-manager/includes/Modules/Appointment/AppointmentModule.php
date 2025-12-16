@@ -180,6 +180,8 @@ class AppointmentModule implements ModuleInterface
             return $appointmentId;
         }
 
+        do_action('ms_appointment_booked', $providerId);
+
         return [
             'id'        => $appointmentId,
             'status'    => 'reserved',
@@ -214,6 +216,9 @@ class AppointmentModule implements ModuleInterface
         ]);
 
         update_post_meta($appointmentId, 'ms_status', $status);
+
+        $providerId = (int) get_post_meta($appointmentId, 'ms_provider_id', true);
+        do_action('ms_appointment_status_changed', $providerId, $status);
 
         return [
             'id'     => $appointmentId,

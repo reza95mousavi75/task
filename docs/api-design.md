@@ -158,3 +158,15 @@
 - Endpoint تنظیم‌شدنی، با secret و signature.
 - رخدادهای کلیدی: `appointment.created`, `appointment.cancelled`, `payment.succeeded`, `payment.failed`, `prescription.issued`.
 - ارسال مجدد (retry) با backoff تا 5 بار؛ لاگ وضعیت ارسال.
+
+## Directory (Providers & Services)
+
+- `GET /ms/v1/providers` — لیست پزشکان/ارائه‌دهندگان با فیلتر specialty، جست‌وجوی متنی، pagination (`per_page`, `page`).
+- `GET /ms/v1/providers/{id}` — جزئیات پزشک به‌همراه لیست خدمات.
+- `POST /ms/v1/providers` — ایجاد/به‌روزرسانی پزشک (admin/editor capability) با فیلدهای `name`, `bio`, `specialties[]`, `rating`.
+- `POST /ms/v1/services` — ثبت خدمت جدید برای پزشک (admin/editor) با `provider_id`, `title`, `duration`, `price`, `description`.
+- `GET /ms/v1/providers/{id}/services` — لیست خدمات فعال یک پزشک.
+
+### Notes
+- همه متادیتا در meta post ذخیره می‌شود (`ms_specialties`, `ms_rating`, `ms_provider_id`, `ms_duration`, `ms_price`).
+- تمامی endpoints GET عمومی هستند؛ endpoints ایجاد نیازمند capability `edit_posts` است.
