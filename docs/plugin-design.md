@@ -102,3 +102,18 @@ interface ModuleContract {
 - PHPUnit برای Unit/Integration (با WP test suite)، پوشش BookingService، PaymentWebhookHandler، SmsAdapter.
 - Contract test برای REST (snapshot JSON) و load test script (k6) برای مسیر رزرو.
 - Static analysis: PHPStan/Psalm level 6+، و ESLint/Prettier برای JS.
+
+## نمونه پیاده‌سازی اولیه در مخزن
+- مسیر: `plugin/clinic-manager/`
+- فایل‌های کلیدی:
+  - `clinic-manager.php`: bootstrap پلاگین، بارگذاری ServiceContainer و ModuleRegistry و ثبت ماژول‌ها.
+  - `includes/Core/ModuleInterface.php`: قرارداد ماژول‌ها.
+  - `includes/Core/ModuleRegistry.php`: مدیریت enable/disable و boot ماژول‌های ثبت‌شده با نگهداری state در `wp_options`.
+  - `includes/Core/Plugin.php`: اتصال lifecycle وردپرس (activate/deactivate) به ماژول‌ها.
+  - `includes/Modules/Appointment/AppointmentModule.php`: ماژول نوبت‌دهی اولیه با ثبت post type، REST endpoint ساده و ایجاد جداول `ms_appointments` و `ms_time_slots`.
+
+### نحوه تست دستی در WordPress محلی
+1. پوشه‌ی `plugin/clinic-manager` را داخل `wp-content/plugins` کپی کنید.
+2. پلاگین “Clinic Manager” را در داشبورد فعال کنید تا جداول اولیه ساخته شود.
+3. با `POST /wp-json/ms/v1/appointments` و بدنه‌ی `{ "patient_name": "Ali", "phone": "09...", "service_id": 1, "slot_time": "2024-06-01 10:00" }` یک رزرو نمونه ثبت کنید.
+4. در Admin، post typeهای `Appointments` و `Patients` برای مشاهده رکوردها ظاهر می‌شوند.

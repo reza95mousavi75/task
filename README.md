@@ -7,6 +7,7 @@
 - [`docs/mvp-plan.md`](docs/mvp-plan.md): محدوده و تحویل MVP، اسپرینت‌ها و معیارهای پذیرش.
 - [`docs/plugin-design.md`](docs/plugin-design.md): ساختار پوشه‌ها، رجیستری ماژول، کانتینر سرویس، امنیت و الگوی تست.
 - [`docs/api-design.md`](docs/api-design.md): قراردادهای REST برای MVP (رزرو، EMR، پرداخت، OTP و وبهوک‌ها).
+- `plugin/clinic-manager/`: نمونه‌ی اولیه پلاگین ماژولار وردپرس شامل Module Registry، Service Container و ماژول نوبت‌دهی اولیه.
 
 ## نکات کلیدی
 - معماری یکپارچه اما ماژولار با **Module Registry** برای enable/disable بدون تخریب داده.
