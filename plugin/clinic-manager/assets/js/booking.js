@@ -21,6 +21,94 @@
         });
     }
 
+    function formatSlot(dateString) {
+        try {
+            var date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return '';
+            }
+
+            return date.toLocaleString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function updateBusySlots(providerId, slotValue) {
+        var busyContainer = document.getElementById('ms-busy-info');
+
+        if (!busyContainer) {
+            return;
+        }
+
+        if (typeof msBookingData === 'undefined' || !msBookingData.availabilityEndpoint) {
+            busyContainer.textContent = '';
+            return;
+        }
+
+        if (!providerId || !slotValue) {
+            busyContainer.textContent = '';
+            return;
+        }
+
+        var selectedDate = new Date(slotValue);
+        if (isNaN(selectedDate.getTime())) {
+            busyContainer.textContent = '';
+            return;
+        }
+
+        var start = new Date(selectedDate);
+        start.setHours(0, 0, 0, 0);
+
+        var end = new Date(selectedDate);
+        end.setHours(23, 59, 59, 999);
+
+        var url = new URL(msBookingData.availabilityEndpoint);
+        url.searchParams.set('provider_id', providerId);
+        url.searchParams.set('start', start.toISOString());
+        url.searchParams.set('end', end.toISOString());
+
+        busyContainer.textContent = window.wp && wp.i18n ? wp.i18n.__('Checking availability…', 'clinic-manager') : 'Checking availability…';
+
+        fetch(url.toString())
+            .then(function (res) {
+                if (!res.ok) {
+                    throw new Error('Unable to load availability');
+                }
+                return res.json();
+            })
+            .then(function (data) {
+                if (!Array.isArray(data) || data.length === 0) {
+                    busyContainer.textContent = window.wp && wp.i18n ? wp.i18n.__('No conflicts for the selected day.', 'clinic-manager') : 'No conflicts for the selected day.';
+                    return;
+                }
+
+                var list = data
+                    .map(function (slot) {
+                        return formatSlot(slot.start) + ' - ' + formatSlot(slot.end);
+                    })
+                    .filter(function (text) {
+                        return Boolean(text.trim());
+                    });
+
+                if (!list.length) {
+                    busyContainer.textContent = '';
+                    return;
+                }
+
+                busyContainer.textContent = (window.wp && wp.i18n ? wp.i18n.__('Busy times:', 'clinic-manager') : 'Busy times:') + ' ' + list.join(' | ');
+            })
+            .catch(function () {
+                busyContainer.textContent = window.wp && wp.i18n ? wp.i18n.__('Unable to fetch availability right now.', 'clinic-manager') : 'Unable to fetch availability right now.';
+            });
+    }
+
     function handleSubmit(event) {
         event.preventDefault();
 
@@ -156,10 +244,24 @@
         var providerSelect = document.getElementById('ms-provider');
         var form = document.querySelector('.ms-booking-form');
         var otpButton = document.getElementById('ms-otp-button');
+        var slotInput = document.getElementById('ms-slot');
 
         if (providerSelect) {
             providerSelect.addEventListener('change', function (event) {
-                populateServices(event.target.value);
+                var providerId = event.target.value;
+                populateServices(providerId);
+
+                if (slotInput) {
+                    updateBusySlots(providerId, slotInput.value);
+                }
+            });
+        }
+
+        if (slotInput) {
+            slotInput.addEventListener('change', function (event) {
+                if (providerSelect) {
+                    updateBusySlots(providerSelect.value, event.target.value);
+                }
             });
         }
 

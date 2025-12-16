@@ -46,6 +46,7 @@ class Shortcodes
         wp_localize_script('ms-booking', 'msBookingData', [
             'endpoint'  => rest_url('ms/v1/appointments'),
             'otpEndpoint' => rest_url('ms/v1/otp'),
+            'availabilityEndpoint' => rest_url('ms/v1/availability'),
             'nonce'     => wp_create_nonce('wp_rest'),
             'providers' => $providers,
             'services'  => $services,
@@ -90,6 +91,7 @@ class Shortcodes
                 <div class="ms-field">
                     <label for="ms-slot"><?php esc_html_e('Appointment time', 'clinic-manager'); ?></label>
                     <input type="datetime-local" id="ms-slot" name="slot_time" required />
+                    <div class="ms-busy-info" id="ms-busy-info" role="status" aria-live="polite"></div>
                 </div>
                 <div class="ms-actions">
                     <button type="submit" class="ms-submit"><?php esc_html_e('Book appointment', 'clinic-manager'); ?></button>
