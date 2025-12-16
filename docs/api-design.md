@@ -159,6 +159,14 @@
 - رخدادهای کلیدی: `appointment.created`, `appointment.cancelled`, `payment.succeeded`, `payment.failed`, `prescription.issued`.
 - ارسال مجدد (retry) با backoff تا 5 بار؛ لاگ وضعیت ارسال.
 
+### پیاده‌سازی فعلی (API Gateway Module)
+- `GET /ms/v1/webhooks` — لیست hookهای فعال/غیرفعال (فقط ادمین)
+- `POST /ms/v1/webhooks` — ایجاد webhook جدید با فیلدهای `name`, `target_url`, `event`, `secret?`, `status?` (فقط ادمین)
+- `DELETE /ms/v1/webhooks/{id}` — حذف یک webhook (soft delete در MVP نیست)
+- `POST /ms/v1/webhooks/test` — ارسال رویداد تست/دلخواه به همه hookهایی که event یکسان دارند و گزارش کد پاسخ را برمی‌گرداند (فقط ادمین)
+- HMAC امضای payload: هدر `X-MS-Signature` برابر `hash_hmac('sha256', body, secret)` و `X-MS-Event` برای نام رخداد؛ بدنه JSON شامل `{ event, payload, sent_at }`.
+- رویدادهای جاری: `appointment.booked` و `appointment.status_changed`.
+
 ## Directory (Providers & Services)
 
 - `GET /ms/v1/providers` — لیست پزشکان/ارائه‌دهندگان با فیلتر specialty، جست‌وجوی متنی، pagination (`per_page`, `page`).
