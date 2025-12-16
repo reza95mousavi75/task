@@ -109,11 +109,14 @@ interface ModuleContract {
   - `clinic-manager.php`: bootstrap پلاگین، بارگذاری ServiceContainer و ModuleRegistry و ثبت ماژول‌ها.
   - `includes/Core/ModuleInterface.php`: قرارداد ماژول‌ها.
   - `includes/Core/ModuleRegistry.php`: مدیریت enable/disable و boot ماژول‌های ثبت‌شده با نگهداری state در `wp_options`.
-  - `includes/Core/Plugin.php`: اتصال lifecycle وردپرس (activate/deactivate) به ماژول‌ها.
-  - `includes/Modules/Appointment/AppointmentModule.php`: ماژول نوبت‌دهی اولیه با ثبت post type، REST endpoint ساده و ایجاد جداول `ms_appointments` و `ms_time_slots`.
+  - `includes/Core/Plugin.php`: اتصال lifecycle وردپرس (activate/deactivate) به ماژول‌ها و register کردن منوی Admin برای مدیریت ماژول‌ها.
+  - `includes/Admin/ModulesPage.php`: صفحه‌ی داشبورد برای فعال/غیرفعال کردن ماژول‌ها (state در `wp_options` ذخیره می‌شود).
+  - `includes/Modules/Appointment/AppointmentModule.php`: ماژول نوبت‌دهی اولیه با ثبت post type، ثبت statusهای سفارشی (reserved/confirmed/cancelled/noshow)، endpoint رزرو و بروزرسانی وضعیت، و ایجاد جداول `ms_appointments` و `ms_time_slots`.
 
 ### نحوه تست دستی در WordPress محلی
 1. پوشه‌ی `plugin/clinic-manager` را داخل `wp-content/plugins` کپی کنید.
 2. پلاگین “Clinic Manager” را در داشبورد فعال کنید تا جداول اولیه ساخته شود.
-3. با `POST /wp-json/ms/v1/appointments` و بدنه‌ی `{ "patient_name": "Ali", "phone": "09...", "service_id": 1, "slot_time": "2024-06-01 10:00" }` یک رزرو نمونه ثبت کنید.
-4. در Admin، post typeهای `Appointments` و `Patients` برای مشاهده رکوردها ظاهر می‌شوند.
+3. در منوی “Clinic Manager” می‌توانید ماژول‌ها را فعال/غیرفعال کنید و نتیجه را در لیست ببینید (state در گزینه‌ی `ms_modules`).
+4. با `POST /wp-json/ms/v1/appointments` و بدنه‌ی `{ "patient_name": "Ali", "phone": "09...", "service_id": 1, "provider_id": 7, "slot_time": "2024-06-01 10:00" }` یک رزرو نمونه ثبت کنید. اگر برای همان provider و همان زمان رزرو فعال وجود داشته باشد، پاسخ 409 دریافت می‌کنید.
+5. وضعیت نوبت را با `PATCH /wp-json/ms/v1/appointments/{id}/status` و بدنه‌ی `{ "status": "confirmed" }` بروزرسانی کنید؛ post_status به صورت خودکار به status مرتبط (`ms_confirmed`) تغییر می‌کند.
+6. در Admin، post typeهای `Appointments` و `Patients` برای مشاهده رکوردها ظاهر می‌شوند.

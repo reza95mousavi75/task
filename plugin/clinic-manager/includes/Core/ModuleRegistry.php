@@ -31,10 +31,10 @@ class ModuleRegistry
      */
     public function bootActiveModules()
     {
-        $stored = get_option('ms_modules', []);
+        $states = $this->states();
 
         foreach ($this->modules as $slug => $module) {
-            $isActive = $stored[$slug]['active'] ?? true; // default active on first install
+            $isActive = $states[$slug]['active'] ?? true; // default active on first install
 
             if ($isActive) {
                 $module->boot($this->container);
@@ -82,5 +82,15 @@ class ModuleRegistry
     public function all()
     {
         return $this->modules;
+    }
+
+    /**
+     * Return persisted module state keyed by slug.
+     *
+     * @return array<string, array{active:bool,version:string}>
+     */
+    public function states()
+    {
+        return get_option('ms_modules', []);
     }
 }

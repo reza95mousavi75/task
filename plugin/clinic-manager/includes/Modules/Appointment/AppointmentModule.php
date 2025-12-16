@@ -20,6 +20,7 @@ class AppointmentModule implements ModuleInterface
     public function boot(ServiceContainer $container)
     {
         add_action('init', [$this, 'registerPostTypes']);
+        add_action('init', [$this, 'registerStatuses']);
         add_action('rest_api_init', [$this, 'registerRoutes']);
     }
 
@@ -41,6 +42,7 @@ class AppointmentModule implements ModuleInterface
             'public'       => false,
             'show_ui'      => true,
             'supports'     => ['title', 'custom-fields'],
+            'show_in_rest' => true,
             'capability_type' => 'post',
             'map_meta_cap' => true,
             'menu_icon'    => 'dashicons-calendar-alt',
@@ -51,10 +53,31 @@ class AppointmentModule implements ModuleInterface
             'public'       => false,
             'show_ui'      => true,
             'supports'     => ['title', 'custom-fields'],
+            'show_in_rest' => true,
             'capability_type' => 'post',
             'map_meta_cap' => true,
             'menu_icon'    => 'dashicons-id',
         ]);
+    }
+
+    public function registerStatuses()
+    {
+        $statuses = [
+            'ms_reserved'  => __('Reserved', 'clinic-manager'),
+            'ms_confirmed' => __('Confirmed', 'clinic-manager'),
+            'ms_cancelled' => __('Cancelled', 'clinic-manager'),
+            'ms_noshow'    => __('No-show', 'clinic-manager'),
+        ];
+
+        foreach ($statuses as $key => $label) {
+            register_post_status($key, [
+                'label'                     => $label,
+                'public'                    => false,
+                'show_in_admin_all_list'    => true,
+                'show_in_admin_status_list' => true,
+                'label_count'               => _n_noop($label . ' <span class="count">(%s)</span>', $label . ' <span class="count">(%s)</span>', 'clinic-manager'),
+            ]);
+        }
     }
 
     public function registerRoutes()
@@ -63,6 +86,27 @@ class AppointmentModule implements ModuleInterface
             'methods'             => 'POST',
             'callback'            => [$this, 'bookAppointment'],
             'permission_callback' => '__return_true',
+            'args'                => [
+                'patient_name' => ['sanitize_callback' => 'sanitize_text_field'],
+                'phone'        => ['sanitize_callback' => 'sanitize_text_field'],
+                'service_id'   => ['sanitize_callback' => 'absint'],
+                'provider_id'  => ['sanitize_callback' => 'absint'],
+                'slot_time'    => ['sanitize_callback' => 'sanitize_text_field'],
+            ],
+        ]);
+
+        register_rest_route('ms/v1', '/appointments/(?P<id>\d+)/status', [
+            'methods'             => 'PATCH',
+            'callback'            => [$this, 'updateStatus'],
+            'permission_callback' => function () {
+                return current_user_can('edit_posts');
+            },
+            'args'                => [
+                'status' => [
+                    'required'          => true,
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
+            ],
         ]);
     }
 
@@ -71,20 +115,32 @@ class AppointmentModule implements ModuleInterface
         $patientName = sanitize_text_field($request['patient_name'] ?? '');
         $phone       = sanitize_text_field($request['phone'] ?? '');
         $serviceId   = absint($request['service_id'] ?? 0);
+        $providerId  = absint($request['provider_id'] ?? 0);
         $slotTime    = sanitize_text_field($request['slot_time'] ?? '');
+
+        $slotTimestamp = strtotime($slotTime) ?: 0;
+
+        if ($slotTimestamp <= 0) {
+            return new \WP_Error('ms_invalid_slot', __('Invalid slot time supplied.', 'clinic-manager'), ['status' => 400]);
+        }
 
         if (! $patientName || ! $phone || ! $slotTime) {
             return new \WP_Error('ms_invalid', __('Missing required fields', 'clinic-manager'), ['status' => 400]);
         }
 
+        if ($this->hasConflict($providerId, $slotTime)) {
+            return new \WP_Error('ms_conflict', __('This time slot is no longer available.', 'clinic-manager'), ['status' => 409]);
+        }
+
         $appointmentId = wp_insert_post([
             'post_type'   => 'ms_appointment',
-            'post_status' => 'publish',
+            'post_status' => 'ms_reserved',
             'post_title'  => sprintf(__('Appointment for %s', 'clinic-manager'), $patientName),
             'meta_input'  => [
                 'ms_patient_name' => $patientName,
                 'ms_phone'        => $phone,
                 'ms_service_id'   => $serviceId,
+                'ms_provider_id'  => $providerId,
                 'ms_slot_time'    => $slotTime,
                 'ms_status'       => 'reserved',
             ],
@@ -99,6 +155,63 @@ class AppointmentModule implements ModuleInterface
             'status'    => 'reserved',
             'slot_time' => $slotTime,
         ];
+    }
+
+    public function updateStatus($request)
+    {
+        $appointmentId = absint($request['id'] ?? 0);
+        $status        = sanitize_text_field($request['status'] ?? '');
+        $allowed       = ['reserved', 'confirmed', 'cancelled', 'noshow'];
+
+        if (! $appointmentId || ! get_post($appointmentId)) {
+            return new \WP_Error('ms_not_found', __('Appointment not found.', 'clinic-manager'), ['status' => 404]);
+        }
+
+        if (! in_array($status, $allowed, true)) {
+            return new \WP_Error('ms_invalid_status', __('Invalid status.', 'clinic-manager'), ['status' => 400]);
+        }
+
+        $postStatusMap = [
+            'reserved'  => 'ms_reserved',
+            'confirmed' => 'ms_confirmed',
+            'cancelled' => 'ms_cancelled',
+            'noshow'    => 'ms_noshow',
+        ];
+
+        wp_update_post([
+            'ID'          => $appointmentId,
+            'post_status' => $postStatusMap[$status],
+        ]);
+
+        update_post_meta($appointmentId, 'ms_status', $status);
+
+        return [
+            'id'     => $appointmentId,
+            'status' => $status,
+        ];
+    }
+
+    private function hasConflict($providerId, $slotTime)
+    {
+        $query = new \WP_Query([
+            'post_type'      => 'ms_appointment',
+            'post_status'    => ['ms_reserved', 'ms_confirmed'],
+            'posts_per_page' => 1,
+            'meta_query'     => [
+                'relation' => 'AND',
+                [
+                    'key'   => 'ms_slot_time',
+                    'value' => $slotTime,
+                ],
+                [
+                    'key'     => 'ms_provider_id',
+                    'value'   => $providerId,
+                    'compare' => '=',
+                ],
+            ],
+        ]);
+
+        return $query->have_posts();
     }
 
     private function createTables()

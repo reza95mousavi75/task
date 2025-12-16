@@ -10,27 +10,22 @@
 ## Appointment
 ### POST /ms/v1/appointments
 - **هدف**: رزرو نوبت (OTP یا کاربر ثبت‌نام‌شده).
-- **Body**:
+- **Body (پیاده‌سازی اولیه فعلی)**:
 ```json
 {
-  "provider_id": 12,
+  "patient_name": "Ali Rezai",
+  "phone": "+989121234567",
   "service_id": 5,
-  "slot_id": 991,          // یا start/end زمانی اگر slot از پیش تولید نشده
-  "patient": {
-    "full_name": "Ali Rezai",
-    "phone": "+989121234567",
-    "otp": "123456"       // الزامی اگر patient ثبت‌نام ندارد و OTP flow است
-  },
-  "payment_method": "online|cash",
-  "metadata": {"utm": "google"}
+  "provider_id": 12,
+  "slot_time": "2024-06-01 10:00"
 }
 ```
-- **Validation**: ظرفیت slot، وضعیت provider/service، rate limit روی phone، anti-double-booking lock.
-- **Response**: `appointment_id`, `status` (pending_payment|confirmed), `payment_url` (اگر آنلاین), `otp_required`.
+- **Validation**: زمان معتبر، نیازمندی فیلدها، anti-double-booking روی provider+slot_time (پاسخ 409 در تعارض).
+- **Response**: `id`, `status` (reserved) و `slot_time`.
 
 ### PATCH /ms/v1/appointments/{id}/status
-- **Body**: `{ "status": "cancelled|attended|no_show|confirmed" }`
-- **Rule**: فقط owner provider یا منشی مجاز؛ در حالت لغو با جریمه، Finance Service بروزرسانی می‌شود.
+- **Body**: `{ "status": "reserved|confirmed|cancelled|noshow" }`
+- **Rule (پیاده‌سازی اولیه)**: نیاز به capability `edit_posts`؛ status به post_status متناظر (`ms_reserved|ms_confirmed|ms_cancelled|ms_noshow`) نگاشت می‌شود.
 
 ### GET /ms/v1/providers/{id}/availability
 - **Query**: `from`, `to` (ISO datetime)

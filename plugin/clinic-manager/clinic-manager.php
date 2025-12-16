@@ -14,6 +14,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/Core/ServiceContainer.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Core/ModuleInterface.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Core/ModuleRegistry.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Core/Plugin.php';
+require_once plugin_dir_path(__FILE__) . 'includes/Admin/ModulesPage.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Modules/Appointment/AppointmentModule.php';
 
 add_action('plugins_loaded', function () {

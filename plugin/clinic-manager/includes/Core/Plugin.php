@@ -2,6 +2,8 @@
 
 namespace MS\Core;
 
+use MS\Admin\ModulesPage;
+
 /**
  * Core plugin bootstrapper.
  */
@@ -13,10 +15,14 @@ class Plugin
     /** @var ModuleRegistry */
     private $modules;
 
+    /** @var ModulesPage */
+    private $modulesPage;
+
     public function __construct(ServiceContainer $container, ModuleRegistry $modules)
     {
         $this->container = $container;
         $this->modules   = $modules;
+        $this->modulesPage = new ModulesPage($modules);
     }
 
     public function boot()
@@ -27,6 +33,8 @@ class Plugin
         add_action('init', function () {
             $this->modules->bootActiveModules();
         });
+
+        $this->modulesPage->hooks();
     }
 
     /**
