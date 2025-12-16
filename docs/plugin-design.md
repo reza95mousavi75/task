@@ -109,8 +109,9 @@ interface ModuleContract {
   - `clinic-manager.php`: bootstrap پلاگین، بارگذاری ServiceContainer و ModuleRegistry و ثبت ماژول‌ها.
   - `includes/Core/ModuleInterface.php`: قرارداد ماژول‌ها.
   - `includes/Core/ModuleRegistry.php`: مدیریت enable/disable و boot ماژول‌های ثبت‌شده با نگهداری state در `wp_options`.
-  - `includes/Core/Plugin.php`: اتصال lifecycle وردپرس (activate/deactivate) به ماژول‌ها و register کردن منوی Admin برای مدیریت ماژول‌ها.
+  - `includes/Core/Plugin.php`: اتصال lifecycle وردپرس (activate/deactivate) به ماژول‌ها و register کردن منوی Admin برای مدیریت ماژول‌ها و داشبورد منشی.
   - `includes/Admin/ModulesPage.php`: صفحه‌ی داشبورد برای فعال/غیرفعال کردن ماژول‌ها (state در `wp_options` ذخیره می‌شود).
+  - `includes/Admin/DashboardPage.php`: داشبورد ساده منشی/مدیر برای مشاهده نوبت‌های پیش‌رو، آمار روز و تغییر سریع وضعیت‌ها.
   - `includes/Modules/Appointment/AppointmentModule.php`: ماژول نوبت‌دهی اولیه با ثبت post type، ثبت statusهای سفارشی (reserved/confirmed/cancelled/noshow)، endpoint رزرو و بروزرسانی وضعیت، endpoint لیست/نمایش نوبت‌ها برای داشبورد، و ایجاد جداول `ms_appointments` و `ms_time_slots`.
   - `includes/Modules/EMR/EMRModule.php`: ماژول پرونده الکترونیک اولیه با post typeهای Patient و Visit و endpointهای ساخت/بازیابی بیمار، جستجو/لیست بیماران، ثبت و لیست ویزیت به‌همراه تاریخ و متادیتا.
   - `includes/Modules/Finance/FinanceModule.php`: ماژول مالی اولیه با جداول `ms_payments` و `ms_wallets`، endpoint ثبت پرداخت، webhook برای تغییر وضعیت و شارژ کیف پول، و endpoint خواندن مانده کیف پول پزشک.

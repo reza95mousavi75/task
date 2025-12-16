@@ -8,6 +8,7 @@
 - [`docs/plugin-design.md`](docs/plugin-design.md): ساختار پوشه‌ها، رجیستری ماژول، کانتینر سرویس، امنیت و الگوی تست.
 - [`docs/api-design.md`](docs/api-design.md): قراردادهای REST برای MVP (رزرو، EMR، پرداخت، OTP و وبهوک‌ها).
 - `plugin/clinic-manager/`: نمونه‌ی اولیه پلاگین ماژولار وردپرس شامل Module Registry، Service Container و ماژول‌های نوبت‌دهی، دایرکتوری پزشک/خدمات، EMR، مالی، تنظیمات، پیامک/اتوماسیون، رشد/مارکتینگ، پشتیبانی و API Gateway/Webhooks.
+- داشبورد منشی/مدیریت در ادمین وردپرس برای مشاهده نوبت‌های پیش‌رو و تغییر سریع وضعیت‌ها.
 
 ## نکات کلیدی
 - معماری یکپارچه اما ماژولار با **Module Registry** برای enable/disable بدون تخریب داده.
