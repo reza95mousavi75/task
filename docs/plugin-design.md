@@ -113,6 +113,7 @@ interface ModuleContract {
   - `includes/Admin/ModulesPage.php`: صفحه‌ی داشبورد برای فعال/غیرفعال کردن ماژول‌ها (state در `wp_options` ذخیره می‌شود).
   - `includes/Modules/Appointment/AppointmentModule.php`: ماژول نوبت‌دهی اولیه با ثبت post type، ثبت statusهای سفارشی (reserved/confirmed/cancelled/noshow)، endpoint رزرو و بروزرسانی وضعیت، و ایجاد جداول `ms_appointments` و `ms_time_slots`.
   - `includes/Modules/EMR/EMRModule.php`: ماژول پرونده الکترونیک اولیه با post typeهای Patient و Visit و endpointهای ساخت/بازیابی بیمار و ثبت ویزیت.
+  - `includes/Modules/Finance/FinanceModule.php`: ماژول مالی اولیه با جداول `ms_payments` و `ms_wallets`، endpoint ثبت پرداخت، webhook برای تغییر وضعیت و شارژ کیف پول، و endpoint خواندن مانده کیف پول پزشک.
 
 ### نحوه تست دستی در WordPress محلی
 1. پوشه‌ی `plugin/clinic-manager` را داخل `wp-content/plugins` کپی کنید.
@@ -121,3 +122,4 @@ interface ModuleContract {
 4. با `POST /wp-json/ms/v1/appointments` و بدنه‌ی `{ "patient_name": "Ali", "phone": "09...", "service_id": 1, "provider_id": 7, "slot_time": "2024-06-01 10:00" }` یک رزرو نمونه ثبت کنید. اگر برای همان provider و همان زمان رزرو فعال وجود داشته باشد، پاسخ 409 دریافت می‌کنید.
 5. وضعیت نوبت را با `PATCH /wp-json/ms/v1/appointments/{id}/status` و بدنه‌ی `{ "status": "confirmed" }` بروزرسانی کنید؛ post_status به صورت خودکار به status مرتبط (`ms_confirmed`) تغییر می‌کند.
 6. در Admin، post typeهای `Appointments` و `Patients` برای مشاهده رکوردها ظاهر می‌شوند.
+7. تست مالی: با `POST /wp-json/ms/v1/payments` و بدنه‌ی `{ "provider_id": 7, "amount": 120000, "method": "online" }` پرداختی ایجاد کنید (status اولیه `pending`). سپس با تنظیم `ms_payment_webhook_secret` و ارسال درخواست به `/wp-json/ms/v1/payments/webhook` با بدنه‌ی `{ "payment_id": <id>, "status": "paid" }`، مانده کیف پول پزشک را از `/wp-json/ms/v1/wallets/7` مشاهده کنید.

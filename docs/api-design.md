@@ -60,16 +60,28 @@
 - **Response**: Visit payload شامل summary، diagnosis، medications و metaهای مربوط.
 
 ## Payments & Wallet
-### POST /ms/v1/payments/webhook
-- **Body نمونه** (درگاه فرضی):
+### POST /ms/v1/payments (پیاده‌سازی فعلی)
+- **Body**:
 ```json
-{ "payment_id": "abc123", "appointment_id": 991, "status": "succeeded", "amount": 500000, "signature": "..." }
+{
+  "provider_id": 7,
+  "appointment_id": 1201,
+  "amount": 480000,
+  "method": "online",
+  "gateway_ref": "invoice-abc",
+  "meta": {"trace": "..."}
+}
 ```
-- **Flow**: signature validation → idempotency (key=`payment_id`) → بروزرسانی `appointments.payment_status` → افزایش `wallet.pending_balance` → انتشار event `payment.succeeded`.
+- **Rules**: amount>0 و provider اجباری، متد الزامی (online/cash/...)، پاسخ شامل `id` و status اولیه `pending`.
 
-### GET /ms/v1/reports/finance/daily
-- **Query**: `date=YYYY-MM-DD`, `provider_id`
-- **Response**: جمع رزروها، پرداخت آنلاین، نقدی، کنسلی با جریمه؛ برای داشبورد منشی/پزشک.
+### POST /ms/v1/payments/webhook (پیاده‌سازی فعلی)
+- **Permission**: header `X-MS-Signature` باید با مقدار `ms_payment_webhook_secret` برابر باشد.
+- **Body**: `{ "payment_id": 10, "status": "paid|failed|refunded" }`
+- **Flow**: بروزرسانی status پرداخت؛ در حالت `paid` کیف پول provider بلافاصله شارژ می‌شود.
+
+### GET /ms/v1/wallets/{provider_id} (پیاده‌سازی فعلی)
+- **Permission**: `edit_posts` (منشی/پزشک).
+- **Response**: `{ provider_id, balance, pending_balance }` (در صورت نبود رکورد مقدار صفر برگردانده می‌شود).
 
 ## SMS/Automation
 ### POST /ms/v1/otp
