@@ -113,7 +113,7 @@ interface ModuleContract {
   - `includes/Admin/ModulesPage.php`: صفحه‌ی داشبورد برای فعال/غیرفعال کردن ماژول‌ها (state در `wp_options` ذخیره می‌شود).
   - `includes/Admin/DashboardPage.php`: داشبورد ساده منشی/مدیر برای مشاهده نوبت‌های پیش‌رو، آمار روز و تغییر سریع وضعیت‌ها.
   - `includes/Frontend/Shortcodes.php`: شورتکدهای `[ms_booking_form]` و `[ms_provider_directory]` برای نمایش کارت پزشکان و فرم رزرو ساده روی صفحات سایت به‌همراه assetهای سبک در `assets/js|css/`.
-  - `includes/Modules/Appointment/AppointmentModule.php`: ماژول نوبت‌دهی اولیه با ثبت post type، ثبت statusهای سفارشی (reserved/confirmed/cancelled/noshow)، endpoint رزرو و بروزرسانی وضعیت، endpoint لیست/نمایش نوبت‌ها برای داشبورد، و ایجاد جداول `ms_appointments` و `ms_time_slots`.
+    - `includes/Modules/Appointment/AppointmentModule.php`: ماژول نوبت‌دهی اولیه با ثبت post type، ثبت statusهای سفارشی (reserved/confirmed/cancelled/noshow)، endpoint رزرو و بروزرسانی وضعیت، endpoint لیست/نمایش نوبت‌ها برای داشبورد، endpoint عمومی `GET /ms/v1/availability` برای بازگرداندن slotهای رزروشده، و ایجاد جداول `ms_appointments` و `ms_time_slots`.
   - `includes/Modules/EMR/EMRModule.php`: ماژول پرونده الکترونیک اولیه با post typeهای Patient و Visit و endpointهای ساخت/بازیابی بیمار، جستجو/لیست بیماران، ثبت و لیست ویزیت به‌همراه تاریخ و متادیتا.
   - `includes/Modules/Finance/FinanceModule.php`: ماژول مالی اولیه با جداول `ms_payments` و `ms_wallets`، endpoint ثبت پرداخت، webhook برای تغییر وضعیت و شارژ کیف پول، و endpoint خواندن مانده کیف پول پزشک.
   - `includes/Modules/Settings/SettingsModule.php`: ماژول تنظیمات هسته برای نگهداری اطلاعات مطب (نام، آدرس، ساعت کاری، timezone)، قالب پیامک و تنظیمات پایه پرداخت از طریق wp_options و endpoint‌های REST محافظت‌شده.

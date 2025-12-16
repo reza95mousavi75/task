@@ -44,9 +44,18 @@
 - **Body**: `{ "status": "reserved|confirmed|cancelled|noshow" }`
 - **Rule (پیاده‌سازی اولیه)**: نیاز به capability `ms_manage_appointments`؛ status به post_status متناظر (`ms_reserved|ms_confirmed|ms_cancelled|ms_noshow`) نگاشت می‌شود.
 
-### GET /ms/v1/providers/{id}/availability
-- **Query**: `from`, `to` (ISO datetime)
-- **Response**: آرایه slotها `{slot_id, start, end, capacity, remaining}` با فیلد `branch_id` و `service_id`.
+### GET /ms/v1/availability (پیاده‌سازی فعلی)
+- **هدف**: نمایش slotهای رزروشده برای جلوگیری از double-booking سمت کلاینت.
+- **Query**: `provider_id` (اجباری)، `date_from`, `date_to` (DATETIME؛ پیش‌فرض از اکنون تا 7 روز بعد).
+- **Response**:
+```json
+{
+  "provider_id": 12,
+  "date_from": "2024-06-01 00:00:00",
+  "date_to": "2024-06-08 00:00:00",
+  "busy": ["2024-06-01 10:00:00", "2024-06-02 09:30:00"]
+}
+```
 
 ## Patient & EMR (Mini)
 ### POST /ms/v1/patients

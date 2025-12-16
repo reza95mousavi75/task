@@ -111,6 +111,20 @@ class AppointmentModule implements ModuleInterface
             },
         ]);
 
+        register_rest_route('ms/v1', '/availability', [
+            'methods'             => 'GET',
+            'callback'            => [$this, 'getAvailability'],
+            'permission_callback' => '__return_true',
+            'args'                => [
+                'provider_id' => [
+                    'required'          => true,
+                    'sanitize_callback' => 'absint',
+                ],
+                'date_from' => ['sanitize_callback' => 'sanitize_text_field'],
+                'date_to'   => ['sanitize_callback' => 'sanitize_text_field'],
+            ],
+        ]);
+
         register_rest_route('ms/v1', '/appointments/(?P<id>\d+)/status', [
             'methods'             => 'PATCH',
             'callback'            => [$this, 'updateStatus'],
@@ -317,6 +331,56 @@ class AppointmentModule implements ModuleInterface
         }
 
         return $this->formatAppointment($post);
+    }
+
+    public function getAvailability($request)
+    {
+        $providerId = absint($request['provider_id'] ?? 0);
+        $dateFrom   = sanitize_text_field($request['date_from'] ?? '');
+        $dateTo     = sanitize_text_field($request['date_to'] ?? '');
+
+        if (! $providerId) {
+            return new \WP_Error('ms_invalid_provider', __('Provider is required.', 'clinic-manager'), ['status' => 400]);
+        }
+
+        $from = $dateFrom ?: current_time('mysql');
+        $to   = $dateTo ?: gmdate('Y-m-d H:i:s', strtotime('+7 days'));
+
+        $query = new \WP_Query([
+            'post_type'      => 'ms_appointment',
+            'post_status'    => ['ms_reserved', 'ms_confirmed'],
+            'posts_per_page' => -1,
+            'meta_query'     => [
+                'relation' => 'AND',
+                [
+                    'key'     => 'ms_provider_id',
+                    'value'   => $providerId,
+                    'compare' => '=',
+                ],
+                [
+                    'key'     => 'ms_slot_time',
+                    'value'   => [$from, $to],
+                    'compare' => 'BETWEEN',
+                    'type'    => 'DATETIME',
+                ],
+            ],
+            'orderby'    => 'meta_value',
+            'meta_key'   => 'ms_slot_time',
+            'order'      => 'ASC',
+        ]);
+
+        $busySlots = [];
+
+        foreach ($query->posts as $post) {
+            $busySlots[] = get_post_meta($post->ID, 'ms_slot_time', true);
+        }
+
+        return [
+            'provider_id' => $providerId,
+            'date_from'   => $from,
+            'date_to'     => $to,
+            'busy'        => $busySlots,
+        ];
     }
 
     private function hasConflict($providerId, $slotTime)
