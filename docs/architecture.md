@@ -42,6 +42,7 @@
 - `wp_ms_medical_records` (id, patient_id, visit_id, notes, files_json, created_at)
 - `wp_ms_prescriptions` (id, visit_id, items_json, status, created_at)
 - `wp_ms_wallets` (id, provider_id, balance, pending_balance)
+- `wp_ms_profile_stats` (provider_id, views, bookings, updated_at)
 - Indexing: `time_slots.start_datetime` + compound (provider_id, start_datetime), unique `(schedule_id, start_datetime)` برای جلوگیری از duplicate slot.
 - Sensitive data می‌تواند با encryption-at-rest در meta_json ذخیره شود.
 
@@ -75,6 +76,7 @@
   - `POST /appointments`، `PATCH /appointments/{id}/status`
   - `POST /patients`، `GET /patients/{id}/records`
   - `POST /payments/webhook`
+  - `POST /reviews`، `GET /reviews`، `POST /profile-views`، `GET /providers/{id}/growth`
 - احراز هویت: JWT برای اپ‌ها، یا Nonce برای درخواست‌های داخل WP.
 - Webhooks برای رخدادها (appointment.created, payment.succeeded, prescription.sent).
 

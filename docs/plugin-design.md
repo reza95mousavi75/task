@@ -115,6 +115,7 @@ interface ModuleContract {
   - `includes/Modules/EMR/EMRModule.php`: ماژول پرونده الکترونیک اولیه با post typeهای Patient و Visit و endpointهای ساخت/بازیابی بیمار، جستجو/لیست بیماران، ثبت و لیست ویزیت به‌همراه تاریخ و متادیتا.
   - `includes/Modules/Finance/FinanceModule.php`: ماژول مالی اولیه با جداول `ms_payments` و `ms_wallets`، endpoint ثبت پرداخت، webhook برای تغییر وضعیت و شارژ کیف پول، و endpoint خواندن مانده کیف پول پزشک.
   - `includes/Modules/SMS/SMSModule.php`: ماژول پیامک/اتوماسیون با endpoint OTP و verify، جدول `ms_otps` برای مدیریت کدها و جدول `ms_rules` برای قوانین اتوماسیون، به همراه Sender داخلی برای لاگ پیامک و فیلتر `ms_sms_validate_otp` برای مصرف OTP در ماژول‌ها.
+  - `includes/Modules/Growth/GrowthModule.php`: ماژول رشد/مارکتینگ با post type نقد و بررسی، endpoint ثبت و لیست بررسی‌ها، شمارنده بازدید پروفایل پزشک و خروجی آماری (بازدید، تعداد رزرو/بازخورد و میانگین امتیاز).
 
 ### نحوه تست دستی در WordPress محلی
 1. پوشه‌ی `plugin/clinic-manager` را داخل `wp-content/plugins` کپی کنید.

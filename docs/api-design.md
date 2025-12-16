@@ -125,6 +125,26 @@
 - **Body**: rule DSL ساده `{ "event": "appointment.created", "condition": {"status": "pending_payment"}, "action": {"type": "sms", "template": "reminder_24h"}, "delay_minutes": 1440 }`
 - **Rule**: فقط admin/provider مجاز؛ ذخیره در جدول `ms_rules`.
 
+## Growth/Marketing (پیاده‌سازی فعلی)
+### POST /ms/v1/reviews
+- **Body**: `{ "provider_id": 22, "rating": 5, "title": "Great visit", "comment": "...", "patient_name": "Ali" }`
+- **Permission**: عمومی (برای سناریوهای رزرو سریع یا بیمار لاگین‌نشده) اما باید همراه با rate-limit در gateway باشد.
+- **Response**: داده review ذخیره‌شده با `id`, `provider_id`, `rating`, `title`, `comment`, `patient_name`, `created_at`.
+
+### GET /ms/v1/reviews
+- **Query**: `provider_id` اختیاری برای فیلتر، `per_page`, `page`.
+- **Permission**: `edit_posts` (پزشک/منشی) برای جلوگیری از اسپم خواندن عمومی.
+- **Response**: لیست صفحه‌بندی‌شده از بررسی‌ها با total/page.
+
+### POST /ms/v1/profile-views
+- **Body**: `{ "provider_id": 22 }`
+- **Permission**: عمومی (با rate-limit لایه gateway/CDN).
+- **Effect**: شمارنده بازدید پروفایل پزشک در جدول `ms_profile_stats` یک واحد افزایش می‌یابد.
+
+### GET /ms/v1/providers/{provider_id}/growth
+- **Permission**: `edit_posts`.
+- **Response**: `{ provider_id, views, bookings, avg_rating, reviews }` با داده‌های جدول stats و خلاصه امتیازدهی.
+
 ## خطاهای استاندارد
 - `400`: validation_error (جزئیات فیلد)
 - `401`: unauthorized / invalid_token / otp_required
