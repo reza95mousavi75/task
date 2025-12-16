@@ -86,6 +86,30 @@ class AppointmentModule implements ModuleInterface
             ],
         ]);
 
+        register_rest_route('ms/v1', '/appointments', [
+            'methods'             => 'GET',
+            'callback'            => [$this, 'listAppointments'],
+            'permission_callback' => function () {
+                return current_user_can('edit_posts');
+            },
+            'args'                => [
+                'provider_id' => ['sanitize_callback' => 'absint'],
+                'status'      => ['sanitize_callback' => 'sanitize_text_field'],
+                'date_from'   => ['sanitize_callback' => 'sanitize_text_field'],
+                'date_to'     => ['sanitize_callback' => 'sanitize_text_field'],
+                'per_page'    => ['sanitize_callback' => 'absint'],
+                'page'        => ['sanitize_callback' => 'absint'],
+            ],
+        ]);
+
+        register_rest_route('ms/v1', '/appointments/(?P<id>\\d+)', [
+            'methods'             => 'GET',
+            'callback'            => [$this, 'getAppointment'],
+            'permission_callback' => function () {
+                return current_user_can('edit_posts');
+            },
+        ]);
+
         register_rest_route('ms/v1', '/appointments/(?P<id>\d+)/status', [
             'methods'             => 'PATCH',
             'callback'            => [$this, 'updateStatus'],
@@ -197,6 +221,98 @@ class AppointmentModule implements ModuleInterface
         ];
     }
 
+    public function listAppointments($request)
+    {
+        $providerId = absint($request['provider_id'] ?? 0);
+        $status     = sanitize_text_field($request['status'] ?? '');
+        $dateFrom   = sanitize_text_field($request['date_from'] ?? '');
+        $dateTo     = sanitize_text_field($request['date_to'] ?? '');
+        $perPage    = absint($request['per_page'] ?? 20);
+        $page       = absint($request['page'] ?? 1);
+
+        $allowedStatuses = [
+            'reserved'  => 'ms_reserved',
+            'confirmed' => 'ms_confirmed',
+            'cancelled' => 'ms_cancelled',
+            'noshow'    => 'ms_noshow',
+        ];
+
+        $metaQuery = [];
+
+        if ($providerId) {
+            $metaQuery[] = [
+                'key'     => 'ms_provider_id',
+                'value'   => $providerId,
+                'compare' => '=',
+            ];
+        }
+
+        if ($dateFrom || $dateTo) {
+            $range = ['relation' => 'AND'];
+
+            if ($dateFrom) {
+                $range[] = [
+                    'key'     => 'ms_slot_time',
+                    'value'   => $dateFrom,
+                    'compare' => '>=',
+                    'type'    => 'DATETIME',
+                ];
+            }
+
+            if ($dateTo) {
+                $range[] = [
+                    'key'     => 'ms_slot_time',
+                    'value'   => $dateTo,
+                    'compare' => '<=',
+                    'type'    => 'DATETIME',
+                ];
+            }
+
+            $metaQuery[] = $range;
+        }
+
+        $queryArgs = [
+            'post_type'      => 'ms_appointment',
+            'post_status'    => array_values($allowedStatuses),
+            'posts_per_page' => $perPage > 0 ? min($perPage, 50) : 20,
+            'paged'          => max(1, $page),
+            'meta_query'     => $metaQuery,
+            'orderby'        => 'meta_value',
+            'meta_key'       => 'ms_slot_time',
+            'order'          => 'ASC',
+        ];
+
+        if ($status && isset($allowedStatuses[$status])) {
+            $queryArgs['post_status'] = [$allowedStatuses[$status]];
+            $metaQuery[]              = [
+                'key'   => 'ms_status',
+                'value' => $status,
+            ];
+            $queryArgs['meta_query']  = $metaQuery;
+        }
+
+        $query = new \WP_Query($queryArgs);
+        $data  = array_map([$this, 'formatAppointment'], $query->posts);
+
+        return [
+            'data'  => $data,
+            'total' => (int) $query->found_posts,
+            'page'  => (int) $queryArgs['paged'],
+        ];
+    }
+
+    public function getAppointment($request)
+    {
+        $appointmentId = absint($request['id'] ?? 0);
+        $post          = get_post($appointmentId);
+
+        if (! $post || $post->post_type !== 'ms_appointment') {
+            return new \WP_Error('ms_not_found', __('Appointment not found.', 'clinic-manager'), ['status' => 404]);
+        }
+
+        return $this->formatAppointment($post);
+    }
+
     private function hasConflict($providerId, $slotTime)
     {
         $query = new \WP_Query([
@@ -259,5 +375,19 @@ class AppointmentModule implements ModuleInterface
         ) {$charsetCollate};";
 
         dbDelta($sql);
+    }
+
+    private function formatAppointment($post)
+    {
+        return [
+            'id'            => $post->ID,
+            'status'        => get_post_meta($post->ID, 'ms_status', true) ?: 'reserved',
+            'patient_name'  => get_post_meta($post->ID, 'ms_patient_name', true),
+            'phone'         => get_post_meta($post->ID, 'ms_phone', true),
+            'provider_id'   => (int) get_post_meta($post->ID, 'ms_provider_id', true),
+            'service_id'    => (int) get_post_meta($post->ID, 'ms_service_id', true),
+            'slot_time'     => get_post_meta($post->ID, 'ms_slot_time', true),
+            'otp_reference' => (int) get_post_meta($post->ID, 'ms_otp_challenge_id', true),
+        ];
     }
 }

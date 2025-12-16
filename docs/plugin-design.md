@@ -111,7 +111,7 @@ interface ModuleContract {
   - `includes/Core/ModuleRegistry.php`: مدیریت enable/disable و boot ماژول‌های ثبت‌شده با نگهداری state در `wp_options`.
   - `includes/Core/Plugin.php`: اتصال lifecycle وردپرس (activate/deactivate) به ماژول‌ها و register کردن منوی Admin برای مدیریت ماژول‌ها.
   - `includes/Admin/ModulesPage.php`: صفحه‌ی داشبورد برای فعال/غیرفعال کردن ماژول‌ها (state در `wp_options` ذخیره می‌شود).
-  - `includes/Modules/Appointment/AppointmentModule.php`: ماژول نوبت‌دهی اولیه با ثبت post type، ثبت statusهای سفارشی (reserved/confirmed/cancelled/noshow)، endpoint رزرو و بروزرسانی وضعیت، و ایجاد جداول `ms_appointments` و `ms_time_slots`.
+  - `includes/Modules/Appointment/AppointmentModule.php`: ماژول نوبت‌دهی اولیه با ثبت post type، ثبت statusهای سفارشی (reserved/confirmed/cancelled/noshow)، endpoint رزرو و بروزرسانی وضعیت، endpoint لیست/نمایش نوبت‌ها برای داشبورد، و ایجاد جداول `ms_appointments` و `ms_time_slots`.
   - `includes/Modules/EMR/EMRModule.php`: ماژول پرونده الکترونیک اولیه با post typeهای Patient و Visit و endpointهای ساخت/بازیابی بیمار و ثبت ویزیت.
   - `includes/Modules/Finance/FinanceModule.php`: ماژول مالی اولیه با جداول `ms_payments` و `ms_wallets`، endpoint ثبت پرداخت، webhook برای تغییر وضعیت و شارژ کیف پول، و endpoint خواندن مانده کیف پول پزشک.
   - `includes/Modules/SMS/SMSModule.php`: ماژول پیامک/اتوماسیون با endpoint OTP و verify، جدول `ms_otps` برای مدیریت کدها و جدول `ms_rules` برای قوانین اتوماسیون، به همراه Sender داخلی برای لاگ پیامک و فیلتر `ms_sms_validate_otp` برای مصرف OTP در ماژول‌ها.
@@ -121,6 +121,7 @@ interface ModuleContract {
 2. پلاگین “Clinic Manager” را در داشبورد فعال کنید تا جداول اولیه ساخته شود.
 3. در منوی “Clinic Manager” می‌توانید ماژول‌ها را فعال/غیرفعال کنید و نتیجه را در لیست ببینید (state در گزینه‌ی `ms_modules`).
 4. با `POST /wp-json/ms/v1/appointments` و بدنه‌ی `{ "patient_name": "Ali", "phone": "09...", "service_id": 1, "provider_id": 7, "slot_time": "2024-06-01 10:00" }` یک رزرو نمونه ثبت کنید. اگر برای همان provider و همان زمان رزرو فعال وجود داشته باشد، پاسخ 409 دریافت می‌کنید.
-5. وضعیت نوبت را با `PATCH /wp-json/ms/v1/appointments/{id}/status` و بدنه‌ی `{ "status": "confirmed" }` بروزرسانی کنید؛ post_status به صورت خودکار به status مرتبط (`ms_confirmed`) تغییر می‌کند.
-6. در Admin، post typeهای `Appointments` و `Patients` برای مشاهده رکوردها ظاهر می‌شوند.
-7. تست مالی: با `POST /wp-json/ms/v1/payments` و بدنه‌ی `{ "provider_id": 7, "amount": 120000, "method": "online" }` پرداختی ایجاد کنید (status اولیه `pending`). سپس با تنظیم `ms_payment_webhook_secret` و ارسال درخواست به `/wp-json/ms/v1/payments/webhook` با بدنه‌ی `{ "payment_id": <id>, "status": "paid" }`، مانده کیف پول پزشک را از `/wp-json/ms/v1/wallets/7` مشاهده کنید.
+5. با `GET /wp-json/ms/v1/appointments?provider_id=7&date_from=2024-06-01` نوبت‌های آینده را لیست کنید و با `GET /wp-json/ms/v1/appointments/{id}` جزئیات نوبت را ببینید.
+6. وضعیت نوبت را با `PATCH /wp-json/ms/v1/appointments/{id}/status` و بدنه‌ی `{ "status": "confirmed" }` بروزرسانی کنید؛ post_status به صورت خودکار به status مرتبط (`ms_confirmed`) تغییر می‌کند.
+7. در Admin، post typeهای `Appointments` و `Patients` برای مشاهده رکوردها ظاهر می‌شوند.
+8. تست مالی: با `POST /wp-json/ms/v1/payments` و بدنه‌ی `{ "provider_id": 7, "amount": 120000, "method": "online" }` پرداختی ایجاد کنید (status اولیه `pending`). سپس با تنظیم `ms_payment_webhook_secret` و ارسال درخواست به `/wp-json/ms/v1/payments/webhook` با بدنه‌ی `{ "payment_id": <id>, "status": "paid" }`، مانده کیف پول پزشک را از `/wp-json/ms/v1/wallets/7` مشاهده کنید.

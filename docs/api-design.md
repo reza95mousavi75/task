@@ -25,6 +25,21 @@
 - **Validation**: زمان معتبر، نیازمندی فیلدها، anti-double-booking روی provider+slot_time (پاسخ 409 در تعارض)، در صورت ارسال OTP هر دو فیلد challenge+code باید معتبر باشد.
 - **Response**: `id`, `status` (reserved) و `slot_time`.
 
+### GET /ms/v1/appointments
+- **هدف**: لیست نوبت‌ها برای منشی/پزشک.
+- **Query**:
+  - `provider_id` (اختیاری)
+  - `status` یکی از `reserved|confirmed|cancelled|noshow`
+  - `date_from` / `date_to` (DATETIME)
+  - `page`, `per_page` (حداکثر 50)
+- **Permission**: `edit_posts`.
+- **Response**: `{ data: [ {id, status, patient_name, phone, provider_id, service_id, slot_time, otp_reference} ], total, page }` مرتب‌شده بر اساس `slot_time` صعودی.
+
+### GET /ms/v1/appointments/{id}
+- **هدف**: دریافت جزئیات یک نوبت برای داشبورد.
+- **Permission**: `edit_posts`.
+- **Response**: payload مشابه آبجکت داخل لیست.
+
 ### PATCH /ms/v1/appointments/{id}/status
 - **Body**: `{ "status": "reserved|confirmed|cancelled|noshow" }`
 - **Rule (پیاده‌سازی اولیه)**: نیاز به capability `edit_posts`؛ status به post_status متناظر (`ms_reserved|ms_confirmed|ms_cancelled|ms_noshow`) نگاشت می‌شود.
