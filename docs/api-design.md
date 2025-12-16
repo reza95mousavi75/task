@@ -125,6 +125,38 @@
 - **Body**: rule DSL ساده `{ "event": "appointment.created", "condition": {"status": "pending_payment"}, "action": {"type": "sms", "template": "reminder_24h"}, "delay_minutes": 1440 }`
 - **Rule**: فقط admin/provider مجاز؛ ذخیره در جدول `ms_rules`.
 
+## Settings (پیاده‌سازی فعلی)
+- **هدف**: ذخیره و بازیابی تنظیمات مطب (اطلاعات کلینیک، ساعات کاری، قالب پیامک، تنظیمات پرداخت پایه).
+- **Permission**: فقط `manage_options`.
+- **Endpoints**:
+  - `GET /ms/v1/settings` — دریافت تنظیمات ذخیره‌شده (با defaults در صورت نبود).
+  - `POST|PUT|PATCH /ms/v1/settings` — بروزرسانی تنظیمات؛ payload نمونه:
+```json
+{
+  "clinic": {
+    "name": "Dr. Rezai Clinic",
+    "phone": "+9821123456",
+    "address": "Tehran, ...",
+    "timezone": "Asia/Tehran",
+    "working_days": ["sat", "sun", "mon", "tue", "wed"],
+    "working_hours": {"start": "08:00", "end": "18:00"}
+  },
+  "sms_templates": {
+    "appointment_confirmation": "Your appointment is confirmed for {date} at {time}",
+    "appointment_reminder": "Reminder: appointment on {date} at {time}",
+    "otp": "Your verification code is {code}"
+  },
+  "payment": {
+    "currency": "IRR",
+    "visit_price": 500000,
+    "gateway": "zarinpal",
+    "success_url": "https://example.com/success",
+    "failure_url": "https://example.com/fail"
+  }
+}
+```
+
+
 ## Growth/Marketing (پیاده‌سازی فعلی)
 ### POST /ms/v1/reviews
 - **Body**: `{ "provider_id": 22, "rating": 5, "title": "Great visit", "comment": "...", "patient_name": "Ali" }`

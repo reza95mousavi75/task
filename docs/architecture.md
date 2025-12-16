@@ -18,6 +18,7 @@
 - E-Prescription & Insurance Bridges
 - Finance & Wallet & Reports
 - SMS/Automation (Adapters + Rules Engine)
+- Settings (Clinic profile, hours, templates, payment defaults)
 - Growth/Marketing
 - UI Panels (پزشک، منشی، مدیریت)
 - API Gateway & Webhooks
@@ -76,6 +77,7 @@
   - `POST /appointments`، `PATCH /appointments/{id}/status`
   - `POST /patients`، `GET /patients/{id}/records`
   - `POST /payments/webhook`
+  - `GET|POST /settings` برای تنظیمات مطب و قالب پیامک
   - `POST /reviews`، `GET /reviews`، `POST /profile-views`، `GET /providers/{id}/growth`
 - احراز هویت: JWT برای اپ‌ها، یا Nonce برای درخواست‌های داخل WP.
 - Webhooks برای رخدادها (appointment.created, payment.succeeded, prescription.sent).

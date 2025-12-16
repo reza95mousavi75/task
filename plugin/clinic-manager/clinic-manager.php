@@ -22,6 +22,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/Modules/Directory/DirectoryMo
 require_once plugin_dir_path(__FILE__) . 'includes/Modules/SMS/SMSModule.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Modules/Growth/GrowthModule.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Modules/API/ApiGatewayModule.php';
+require_once plugin_dir_path(__FILE__) . 'includes/Modules/Settings/SettingsModule.php';
 
 add_action('plugins_loaded', function () {
     $container = new \MS\Core\ServiceContainer();
@@ -37,6 +38,7 @@ add_action('plugins_loaded', function () {
     $registry->register(new \MS\Modules\SMS\SMSModule());
     $registry->register(new \MS\Modules\Growth\GrowthModule());
     $registry->register(new \MS\Modules\API\ApiGatewayModule());
+    $registry->register(new \MS\Modules\Settings\SettingsModule());
 
     $plugin->boot();
 });
