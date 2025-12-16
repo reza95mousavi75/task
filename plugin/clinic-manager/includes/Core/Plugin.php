@@ -4,6 +4,7 @@ namespace MS\Core;
 
 use MS\Admin\ModulesPage;
 use MS\Admin\DashboardPage;
+use MS\Frontend\Shortcodes;
 
 /**
  * Core plugin bootstrapper.
@@ -22,12 +23,16 @@ class Plugin
     /** @var DashboardPage */
     private $dashboardPage;
 
+    /** @var Shortcodes */
+    private $shortcodes;
+
     public function __construct(ServiceContainer $container, ModuleRegistry $modules)
     {
         $this->container = $container;
         $this->modules   = $modules;
         $this->modulesPage = new ModulesPage($modules);
         $this->dashboardPage = new DashboardPage($modules);
+        $this->shortcodes = new Shortcodes();
     }
 
     public function boot()
@@ -42,6 +47,7 @@ class Plugin
 
         $this->modulesPage->hooks();
         $this->dashboardPage->hooks();
+        $this->shortcodes->hooks();
     }
 
     /**

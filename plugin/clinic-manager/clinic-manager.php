@@ -17,6 +17,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/Core/ModuleRegistry.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Core/Plugin.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Admin/DashboardPage.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Admin/ModulesPage.php';
+require_once plugin_dir_path(__FILE__) . 'includes/Frontend/Shortcodes.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Modules/Appointment/AppointmentModule.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Modules/EMR/EMRModule.php';
 require_once plugin_dir_path(__FILE__) . 'includes/Modules/Finance/FinanceModule.php';
